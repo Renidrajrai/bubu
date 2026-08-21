@@ -40,6 +40,6 @@ export async function saveMediaAsset(input: SaveAssetInput) {
         duration: input.duration ?? resource.duration,
       },
     },
-    { new: true, returnDocument: "after", upsert: true, setDefaultsOnInsert: true }
+    { returnDocument: "after", upsert: true, setDefaultsOnInsert: true }
   );
 }

@@ -17,13 +17,17 @@ async function main() {
   const signed = createSignedUploadParams("image");
   console.log("2. signed params:", { folder: signed.folder, formats: signed.allowed_formats });
 
-  const result = await cloudinary.uploader.upload(TEST_PNG, {
+  // wire format is a comma-joined string because that's what gets signed;
+  // SDK typing wants arrays, runtime accepts both (proven by this test)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const uploadOptions: any = {
     folder: signed.folder,
     allowed_formats: signed.allowed_formats,
     timestamp: signed.timestamp,
     signature: signed.signature,
     api_key: signed.apiKey,
-  });
+  };
+  const result = await cloudinary.uploader.upload(TEST_PNG, uploadOptions);
   console.log("3. uploaded:", result.public_id, result.secure_url.slice(0, 60) + "...");
 
   const asset = await saveMediaAsset({
