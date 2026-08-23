@@ -20,7 +20,26 @@
 
 ---
 
-## CURRENT STATE (after Phase 5)
+## CURRENT STATE (after Phase 5 — design v3 "flower scrollytelling")
+
+> DESIGN PIVOT: owner supplied a bubu & dudu reference (cream/blush/cocoa palette,
+> Fredoka + Quicksand + Caveat) then a flower-story direction: bloom → petal falls
+> w/ photo → lands on dandelion → wind scatters seeds each carrying photos → seeds
+> germinate into flowers holding photos → archive button. Old 6-scene layout and
+> Connector/Pop were deleted. Admin inherits new palette via token aliases.
+
+### Scrollytelling architecture (replaces Phase 6 plan's Lenis/GSAP question)
+- `components/story/SceneShell.tsx` — tall section (`vh` prop) + CSS-sticky pinned
+  stage; render-prop hands `scrollYProgress` (motion `useScroll`) to scene content.
+  No GSAP; motion-only scrubbing, reversible by construction.
+- `story/Thread.tsx` — dashed connector drawing via pathLength.
+- Scenes: `BloomScene` (stem grows, petals unfurl staggered, memory detaches+falls),
+  `DandelionScene` (memory lands, gusts shake head, 4 seeds fly each with mini
+  polaroid), `GrowScene` (3 stems sprout, blooms hold photos), `EndingScene`
+  (+ `archive/ArchiveOverlay.tsx` modal grid, Esc/backdrop close).
+- Hero (`IntroScene`) keeps bears SVGs + fanned polaroids + wiggle headline.
+- Reduced motion: CSS keyframes disabled via media query; motion transforms still
+  scrub (acceptable until dedicated pass in Phase 12).
 
 > Build note: this Next version (16.3.2) deprecates `middleware` in favor of `proxy`
 > (build warning seen Phase 5; still works — migrate when touching auth next).
@@ -51,10 +70,12 @@
 | Admin components | `src/components/admin/{LoginForm,LogoutButton,MemoriesDashboard,UploadMemory,MemoryEditor}.tsx` | drag-drop, progress bar, cancel/retry, scene/slot assignment (§42 archive-vs-story) |
 | Scripts | `npm run seed` (`src/scripts/seed.ts`) | reseeds 6 scenes + 6 sample memories (picsum placeholders + one real demo video) |
 | Test scripts | `src/scripts/test-cloudinary.ts` (`--keep` to preserve asset), `verify-deleted.ts` | live pipeline + delete-chain tests |
-| Story page | `src/app/page.tsx` + `src/components/story/StoryCanvas.tsx` | static visual prototype (Phase 5), plain scrolling, no scroll engine yet |
-| Scenes | `src/components/scenes/{Intro,Memory,ConnectedMemory,Video,Collage,QuietMoment}Scene.tsx` | hand-composed per config slots; placeholder URLs via `scenes/placeholders.ts` (same picsum seeds as seed.ts) |
-| Scaffold | `src/components/media/MediaSlot.tsx`, `src/components/animation/{Connector,FloatingDoodle}.tsx` | aspect-ratio-stable slot, stitched-thread connector (static), aria-hidden doodles |
-| Handwriting | Caveat via next/font (`--font-hand` utility class) | captions/accents only |
+| Story page | `src/app/page.tsx` + `src/components/story/{SceneShell,Thread,StoryCanvas}.tsx` | pinned scrollytelling (CSS sticky + motion scrub), no scroll engine lib |
+| Scenes | `src/components/scenes/{Intro,Bloom,Dandelion,Grow,Ending}Scene.tsx` | flower narrative; placeholder URLs via `scenes/placeholders.ts` |
+| Flora SVGs | `src/components/flowers.tsx` | FlowerHead, DandelionHead, Seed, Sprout, Petal (flat palette fills) |
+| Archive | `src/components/archive/ArchiveOverlay.tsx` | modal grid w/ polaroids + video item; Phase 9 will make it DB-driven |
+| Scaffold | `src/components/media/{MediaSlot,Polaroid}.tsx`, `src/components/animation/{FloatingDoodle,Sticker,Floaters}.tsx` | aspect-stable slot, polaroid frame w/ tape+caption, doodles/stickers/ambient floaters |
+| Handwriting + display fonts | Quicksand body · Fredoka headings (`font-display`) · Caveat accents (`font-hand`) | bubu & dudu reference tokens in globals.css; legacy aliases (deep-sage→cocoa etc.) keep admin compiling |
 
 ### Env vars (.env.local — NEVER committed)
 ```

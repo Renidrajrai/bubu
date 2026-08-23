@@ -1,43 +1,158 @@
 @import "tailwindcss";
 
-/* Design tokens — spec §32 palette, tuned as we go */
+/* bubu & dudu design tokens (owner reference design).
+   Semantic aliases below keep old utility names (bg-background, deep-sage, …)
+   working so admin pages recolor automatically. */
 :root {
-  --background: #faf7f0;
-  --surface: #fffdf8;
-  --surface-muted: #efe7da;
-  --text-primary: #2b2b2b;
-  --text-secondary: #6e6a61;
-  --accent: #b85c5c;
-  --accent-soft: #d9a7a7;
-  --border: #e3dacb;
-  --shadow-soft: 0 10px 30px rgb(43 43 43 / 0.08);
+  --cream: #fbf3ec;
+  --cream-2: #f5e6da;
+  --blush: #fbdce6;
+  --blush-2: #f6bfcf;
+  --rose: #e8879c;
+  --cocoa: #54372b;
+  --cocoa-soft: #8a6455;
+  --caramel: #cc9d74;
+  --cloud: #fffdf9;
+  --gold: #efbf6b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-muted: var(--surface-muted);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-border: var(--border);
+  /* semantic aliases */
+  --color-background: var(--cream);
+  --color-surface: var(--cloud);
+  --color-surface-muted: var(--cream-2);
+  --color-text-primary: var(--cocoa);
+  --color-text-secondary: var(--cocoa-soft);
+  --color-accent: var(--rose);
+  --color-accent-soft: var(--blush-2);
+  --color-border: #f0dfd2;
 
-  /* raw palette */
-  --color-cream: #faf7f0;
-  --color-beige: #e8ded0;
-  --color-sage: #a8b8a0;
-  --color-deep-sage: #506454;
-  --color-dusty-blue: #a8b6c4;
-  --color-warm-red: #b85c5c;
-  --color-ink: #2b2b2b;
+  /* raw palette (legacy names → new palette) */
+  --color-cream: var(--cream);
+  --color-beige: var(--blush);
+  --color-sage: var(--blush-2);
+  --color-deep-sage: var(--cocoa);
+  --color-dusty-blue: var(--caramel);
+  --color-warm-red: var(--rose);
+  --color-ink: var(--cocoa);
 
-  --font-sans: var(--font-geist-sans);
+  /* first-class palette names */
+  --color-blush: var(--blush);
+  --color-blush-2: var(--blush-2);
+  --color-rose: var(--rose);
+  --color-cocoa: var(--cocoa);
+  --color-cocoa-soft: var(--cocoa-soft);
+  --color-caramel: var(--caramel);
+  --color-cloud: var(--cloud);
+  --color-gold: var(--gold);
+
+  --font-sans: var(--font-quicksand);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fredoka);
   --font-hand: var(--font-caveat);
+
+  --shadow-soft: 0 14px 32px -14px rgb(84 55 43 / 0.35);
+  --shadow-lift: 0 24px 48px -18px rgb(84 55 43 / 0.45);
+
+  --ease-pop: cubic-bezier(0.32, 1.56, 0.62, 1);
 }
 
 body {
-  background: var(--background);
-  color: var(--text-primary);
+  background:
+    radial-gradient(1000px 640px at 8% -8%, var(--blush) 0%, transparent 55%),
+    radial-gradient(900px 620px at 108% 6%, var(--cream-2) 0%, transparent 55%),
+    var(--cream);
+  color: var(--cocoa);
+}
+
+::selection {
+  background: var(--blush-2);
+  color: var(--cocoa);
+}
+
+/* --- keyframe utilities (reference design) --- */
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.hero-in {
+  animation: hero-in 0.9s var(--ease-pop) both;
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-4deg);
+  }
+}
+.wiggle {
+  display: inline-block;
+  animation: wiggle 3.6s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(9px);
+  }
+}
+.bob {
+  animation: bob 2.1s ease-in-out infinite;
+}
+
+@keyframes sticker-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+  50% {
+    transform: translateY(-8px) rotate(calc(var(--rot, 0deg) * -1));
+  }
+}
+.sticker-bob {
+  animation: sticker-bob 4.5s ease-in-out infinite;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.45;
+  }
+  88% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(-112vh) translateX(var(--drift, 20px)) rotate(30deg);
+    opacity: 0;
+  }
+}
+.float-up {
+  animation-name: float-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-in,
+  .wiggle,
+  .bob,
+  .sticker-bob,
+  .float-up {
+    animation: none !important;
+  }
 }

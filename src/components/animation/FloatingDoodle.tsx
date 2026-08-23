@@ -33,6 +33,14 @@ const doodles = {
       strokeLinejoin="round"
     />
   ),
+  heart: (
+    <path
+      d="M12 20.5C5.5 15 3.5 10.8 6.2 7.9c1.9-2 4.3-1.2 5.8 1 .1.2.4.2.5 0 1.5-2.2 3.9-3 5.8-1 2.7 2.9.7 7.1-6.3 12.6Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+  ),
 } as const;
 
 export type DoodleKind = keyof typeof doodles;
