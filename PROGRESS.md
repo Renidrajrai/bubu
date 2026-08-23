@@ -20,7 +20,11 @@
 
 ---
 
-## CURRENT STATE (after Phase 4)
+## CURRENT STATE (after Phase 5)
+
+> Build note: this Next version (16.3.2) deprecates `middleware` in favor of `proxy`
+> (build warning seen Phase 5; still works — migrate when touching auth next).
+> `<Image priority>` is deprecated → use `preload`.
 
 ### Stack (installed & working)
 - Next.js 16.3.2, React 19.2.8, TypeScript strict, ESLint 9, Tailwind v4 (CSS-first)
@@ -45,8 +49,12 @@
 | Slot registry | `src/config/scenes.ts` | STORY_SCENES: 6 scenes × slots w/ ids + aspectRatio; also DISPLAY_MODES, CATEGORIES |
 | Admin UI | `src/app/admin/login/page.tsx`, `src/app/admin/(dash)/{layout,page}.tsx`, `(dash)/scenes/page.tsx`, `(dash)/media/page.tsx` | memories dashboard + upload panel + edit modal; scenes page shows aspect-correct slot previews; media page flags orphans |
 | Admin components | `src/components/admin/{LoginForm,LogoutButton,MemoriesDashboard,UploadMemory,MemoryEditor}.tsx` | drag-drop, progress bar, cancel/retry, scene/slot assignment (§42 archive-vs-story) |
-| Test scripts | `npm run seed` (`src/scripts/seed.ts`) | reseeds 6 scenes + 6 sample memories (picsum placeholders + one real demo video) |
+| Scripts | `npm run seed` (`src/scripts/seed.ts`) | reseeds 6 scenes + 6 sample memories (picsum placeholders + one real demo video) |
 | Test scripts | `src/scripts/test-cloudinary.ts` (`--keep` to preserve asset), `verify-deleted.ts` | live pipeline + delete-chain tests |
+| Story page | `src/app/page.tsx` + `src/components/story/StoryCanvas.tsx` | static visual prototype (Phase 5), plain scrolling, no scroll engine yet |
+| Scenes | `src/components/scenes/{Intro,Memory,ConnectedMemory,Video,Collage,QuietMoment}Scene.tsx` | hand-composed per config slots; placeholder URLs via `scenes/placeholders.ts` (same picsum seeds as seed.ts) |
+| Scaffold | `src/components/media/MediaSlot.tsx`, `src/components/animation/{Connector,FloatingDoodle}.tsx` | aspect-ratio-stable slot, stitched-thread connector (static), aria-hidden doodles |
+| Handwriting | Caveat via next/font (`--font-hand` utility class) | captions/accents only |
 
 ### Env vars (.env.local — NEVER committed)
 ```

@@ -1,13 +1,26 @@
+import Connector from "@/components/animation/Connector";
+import StoryCanvas from "@/components/story/StoryCanvas";
+import CollageScene from "@/components/scenes/CollageScene";
+import ConnectedMemoryScene from "@/components/scenes/ConnectedMemoryScene";
+import IntroScene from "@/components/scenes/IntroScene";
+import MemoryScene from "@/components/scenes/MemoryScene";
+import QuietMomentScene from "@/components/scenes/QuietMomentScene";
+import VideoScene from "@/components/scenes/VideoScene";
+
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-      <p className="font-mono text-xs uppercase tracking-[0.3em] text-text-secondary">
-        phase 01 · foundation
-      </p>
-      <h1 className="text-3xl font-medium tracking-tight text-text-primary">
-        Interactive Memory Website
-      </h1>
-      <p className="text-sm text-text-secondary">a little place is being built.</p>
-    </main>
+    <StoryCanvas>
+      <IntroScene />
+      <Connector />
+      <MemoryScene />
+      <Connector />
+      <ConnectedMemoryScene />
+      <Connector />
+      <VideoScene />
+      <Connector />
+      <CollageScene />
+      <Connector />
+      <QuietMomentScene />
+    </StoryCanvas>
   );
 }
