@@ -45,8 +45,8 @@
 | Slot registry | `src/config/scenes.ts` | STORY_SCENES: 6 scenes × slots w/ ids + aspectRatio; also DISPLAY_MODES, CATEGORIES |
 | Admin UI | `src/app/admin/login/page.tsx`, `src/app/admin/(dash)/{layout,page}.tsx`, `(dash)/scenes/page.tsx`, `(dash)/media/page.tsx` | memories dashboard + upload panel + edit modal; scenes page shows aspect-correct slot previews; media page flags orphans |
 | Admin components | `src/components/admin/{LoginForm,LogoutButton,MemoriesDashboard,UploadMemory,MemoryEditor}.tsx` | drag-drop, progress bar, cancel/retry, scene/slot assignment (§42 archive-vs-story) |
-| Scripts | `npm run seed` (`src/scripts/seed.ts`) | reseeds 6 scenes + 6 sample memories (picsum placeholders + one real demo video) |
-| Test scripts | `src/scripts/test-cloudinary.ts`, `upload-test-asset.ts`, `verify-deleted.ts` | live pipeline tests |
+| Test scripts | `npm run seed` (`src/scripts/seed.ts`) | reseeds 6 scenes + 6 sample memories (picsum placeholders + one real demo video) |
+| Test scripts | `src/scripts/test-cloudinary.ts` (`--keep` to preserve asset), `verify-deleted.ts` | live pipeline + delete-chain tests |
 
 ### Env vars (.env.local — NEVER committed)
 ```

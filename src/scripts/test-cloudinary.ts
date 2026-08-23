@@ -46,6 +46,11 @@ async function main() {
   console.log("5. re-read from db OK");
 
   // cleanup: remove test asset from Cloudinary + db
+  // --keep skips this so the asset survives for delete-chain testing (verify-deleted.ts)
+  if (process.argv.includes("--keep")) {
+    console.log("6. kept test asset (--keep) — publicId:", result.public_id);
+    return;
+  }
   await cloudinary.uploader.destroy(result.public_id);
   await MediaAsset.deleteOne({ _id: asset._id });
   const gone = await MediaAsset.findOne({ publicId: result.public_id });

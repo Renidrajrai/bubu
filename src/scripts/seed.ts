@@ -1,13 +1,11 @@
-import { readFileSync } from "fs";
+import mongoose from "mongoose";
+import { loadEnvLocal } from "../lib/env";
 import { connectDB } from "../lib/mongodb";
 import { Memory } from "../models/Memory";
 import { Scene } from "../models/Scene";
 
-// load .env.local (Next.js does this automatically, standalone scripts don't)
-for (const line of readFileSync(".env.local", "utf8").split(/\r?\n/)) {
-  const m = line.match(/^([A-Z_]+)=(.*)$/);
-  if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
-}
+// Next.js loads .env.local automatically; standalone scripts don't
+loadEnvLocal();
 
 const img = (seed: string, w: number, h: number) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
@@ -120,11 +118,7 @@ async function main() {
   );
   console.log("crud update matched:", updated.matchedCount);
 
-  await mongoose_disconnect();
-}
-
-function mongoose_disconnect() {
-  return import("mongoose").then((m) => m.default.disconnect());
+  await mongoose.disconnect();
 }
 
 main()

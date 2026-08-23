@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CATEGORIES, DISPLAY_MODES, STORY_SCENES } from "@/config/scenes";
 import type { AdminMemory } from "./MemoriesDashboard";
+import { inputCls, labelCls } from "./formCls";
 
 export default function MemoryEditor({
   memory,
@@ -64,47 +65,47 @@ export default function MemoryEditor({
       >
         <h2 className="text-sm font-medium">edit memory</h2>
 
-        <label className="flex flex-col gap-1 text-xs text-text-secondary">
+        <label className={labelCls}>
           title
-          <input name="title" defaultValue={memory.title} className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+          <input name="title" defaultValue={memory.title} className={inputCls} />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-text-secondary">
+        <label className={labelCls}>
           caption
-          <input name="caption" defaultValue={memory.caption} className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+          <input name="caption" defaultValue={memory.caption} className={inputCls} />
         </label>
 
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             date
-            <input type="date" name="date" defaultValue={dateStr} className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+            <input type="date" name="date" defaultValue={dateStr} className={inputCls} />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             category
-            <select name="category" defaultValue={memory.category} className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary">
+            <select name="category" defaultValue={memory.category} className={inputCls}>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             location
-            <input name="location" defaultValue={memory.location ?? ""} className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+            <input name="location" defaultValue={memory.location ?? ""} className={inputCls} />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             crop position
-            <input name="objectPosition" defaultValue={memory.objectPosition ?? "center"} placeholder="center / top / 30% center" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+            <input name="objectPosition" defaultValue={memory.objectPosition ?? "center"} placeholder="center / top / 30% center" className={inputCls} />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             display mode
-            <select name="displayMode" defaultValue={memory.displayMode ?? "inline"} className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary">
+            <select name="displayMode" defaultValue={memory.displayMode ?? "inline"} className={inputCls}>
               {DISPLAY_MODES.map((d) => (
                 <option key={d} value={d}>{d}</option>
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             visibility
-            <select name="visibility" defaultValue={memory.visibility} className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary">
+            <select name="visibility" defaultValue={memory.visibility} className={inputCls}>
               <option value="public">public</option>
               <option value="hidden">hidden</option>
             </select>
@@ -112,12 +113,12 @@ export default function MemoryEditor({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             story scene
             <select
               value={sceneSlug}
               onChange={(e) => setSceneSlug(e.target.value)}
-              className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary"
+              className={inputCls}
             >
               <option value="">— archive only —</option>
               {STORY_SCENES.map((s) => (
@@ -125,14 +126,14 @@ export default function MemoryEditor({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             slot
             <select
               name="slotId"
               key={sceneSlug}
               defaultValue={sceneSlug === initialScene ? (memory.slotId ?? "") : ""}
               disabled={!sceneSlug}
-              className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary disabled:opacity-40"
+              className={`${inputCls} disabled:opacity-40`}
             >
               <option value="">— pick a slot —</option>
               {slots.map((sl) => (

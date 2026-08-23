@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { CATEGORIES, DISPLAY_MODES, STORY_SCENES } from "@/config/scenes";
+import { inputCls, labelCls } from "./formCls";
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
@@ -209,29 +210,29 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
       )}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <label className="flex flex-col gap-1 text-xs text-text-secondary">
+        <label className={labelCls}>
           title
-          <input name="title" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+          <input name="title" className={inputCls} />
         </label>
         <label className="col-span-2 flex flex-col gap-1 text-xs text-text-secondary sm:col-span-2">
           caption
-          <input name="caption" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+          <input name="caption" className={inputCls} />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-text-secondary">
+        <label className={labelCls}>
           date
-          <input type="date" name="date" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+          <input type="date" name="date" className={inputCls} />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-text-secondary">
+        <label className={labelCls}>
           category
-          <select name="category" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary">
+          <select name="category" className={inputCls}>
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs text-text-secondary">
+        <label className={labelCls}>
           location
-          <input name="location" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary" />
+          <input name="location" className={inputCls} />
         </label>
       </div>
 
@@ -258,29 +259,29 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
 
       {featureInStory && (
         <div className="grid grid-cols-3 gap-3">
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             scene
             <select
               value={sceneSlug}
               onChange={(e) => setSceneSlug(e.target.value)}
-              className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary"
+              className={inputCls}
             >
               {STORY_SCENES.map((s) => (
                 <option key={s.slug} value={s.slug}>{s.slug} · {s.title}</option>
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             slot
-            <select name="slotId" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary">
+            <select name="slotId" className={inputCls}>
               {slots.map((sl) => (
                 <option key={sl.id} value={sl.id}>{sl.id} ({sl.label})</option>
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+          <label className={labelCls}>
             display mode
-            <select name="displayMode" defaultValue="inline" className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-text-primary outline-none focus:border-text-secondary">
+            <select name="displayMode" defaultValue="inline" className={inputCls}>
               {DISPLAY_MODES.map((d) => (
                 <option key={d} value={d}>{d}</option>
               ))}
