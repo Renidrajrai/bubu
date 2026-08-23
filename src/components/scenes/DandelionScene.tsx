@@ -136,17 +136,16 @@ function Content({ p }: { p: MotionValue<number> }) {
       ))}
 
       {/* the fallen memory lands beside it */}
-      <motion.div
-        className="absolute left-[30%] top-[58%] w-32 -translate-x-1/2 sm:w-40"
-        style={{ y: landY, rotate: landRotate, opacity: landOpacity }}
-      >
-        <Polaroid
-          src={ph("pattu-01", 900, 1200)}
-          alt="where it started"
-          aspectRatio="3/4"
-          caption="it drifted here"
-        />
-      </motion.div>
+      <div className="absolute left-[30%] top-[58%] w-32 -translate-x-1/2 sm:w-40">
+        <motion.div style={{ y: landY, rotate: landRotate, opacity: landOpacity }}>
+          <Polaroid
+            src={ph("pattu-01", 900, 1200)}
+            alt="where it started"
+            aspectRatio="3/4"
+            caption="it drifted here"
+          />
+        </motion.div>
+      </div>
 
       <motion.p
         className="absolute bottom-[16%] font-hand text-2xl text-cocoa"

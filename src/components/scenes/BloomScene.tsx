@@ -93,20 +93,19 @@ function Content({ p }: { p: MotionValue<number> }) {
       </div>
 
       {/* the memory, held at the flower's heart — then it falls */}
-      <motion.div
-        className="absolute left-1/2 top-[30%] w-36 -translate-x-1/2 sm:w-44"
-        style={{ opacity: photoOpacity, scale: photoScale }}
-      >
-        <motion.div style={{ y: fallY, x: fallX, rotate: fallRotate }}>
-          <Petal className="absolute -top-9 -left-7 w-7" />
-          <Polaroid
-            src={ph("pattu-01", 900, 1200)}
-            alt="the first memory"
-            aspectRatio="3/4"
-            caption="where it started"
-          />
+      <div className="absolute left-1/2 top-[30%] w-36 -translate-x-1/2 sm:w-44">
+        <motion.div style={{ opacity: photoOpacity, scale: photoScale }}>
+          <motion.div style={{ y: fallY, x: fallX, rotate: fallRotate }}>
+            <Petal className="absolute -top-9 -left-7 w-7" />
+            <Polaroid
+              src={ph("pattu-01", 900, 1200)}
+              alt="the first memory"
+              aspectRatio="3/4"
+              caption="where it started"
+            />
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
 
       <motion.p
         className="absolute top-[62%] font-hand text-2xl text-cocoa"

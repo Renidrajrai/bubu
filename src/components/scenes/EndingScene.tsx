@@ -7,7 +7,7 @@ export default function EndingScene() {
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="relative z-[2] px-6 py-[14vh] text-center">
+    <section className="relative z-[2] w-full px-6 py-[14vh] text-center">
       <h2 className="font-display text-3xl font-semibold text-cocoa sm:text-4xl">
         the story keeps going
         <span className="ml-2 font-hand text-4xl font-bold text-rose sm:text-5xl">

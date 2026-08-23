@@ -21,7 +21,7 @@ export default function SceneShell({
   });
 
   return (
-    <section ref={ref} className="relative" style={{ height: `${vh}svh` }}>
+    <section ref={ref} className="relative w-full" style={{ height: `${vh}svh` }}>
       <div className="sticky top-0 flex h-svh items-center justify-center overflow-hidden">
         {children(scrollYProgress)}
       </div>
