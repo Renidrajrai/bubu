@@ -14,6 +14,8 @@
   --caramel: #cc9d74;
   --cloud: #fffdf9;
   --gold: #efbf6b;
+  --sage: #b5c4b1;
+  --sage-tint: #e8ede6;
 }
 
 @theme inline {
@@ -45,10 +47,12 @@
   --color-caramel: var(--caramel);
   --color-cloud: var(--cloud);
   --color-gold: var(--gold);
+  --color-sage: var(--sage);
+  --color-sage-tint: var(--sage-tint);
 
-  --font-sans: var(--font-quicksand);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-fredoka);
+  --font-display: var(--font-fraunces);
   --font-hand: var(--font-caveat);
 
   --shadow-soft: 0 14px 32px -14px rgb(84 55 43 / 0.35);

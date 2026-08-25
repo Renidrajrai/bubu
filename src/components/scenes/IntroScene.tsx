@@ -1,15 +1,13 @@
 "use client";
 
 import { motion, useTransform, useSpring, type MotionValue } from "motion/react";
-import FloatingDoodle from "../animation/FloatingDoodle";
 import Polaroid from "../media/Polaroid";
 import { FlowerCenter } from "@/assets/flowers";
 import StemDraw from "../story/StemDraw";
-import { ph } from "./placeholders";
-import { FLOWER_TIMING } from "@/config/animation";
-
-// §99: Intro scene — first flower grows as you scroll.
-// Bubu & Dudu + fanned stack + growing flower at bottom.
+import SceneShell from "../story/SceneShell";
+import SceneCamera from "../story/SceneCamera";
+import { FLOWER_TIMING, CAMERA_PRESETS } from "@/config/animation";
+import type { PublicSlot } from "@/lib/story-data";
 
 function Bubu() {
   return (
@@ -47,9 +45,43 @@ function Dudu() {
   );
 }
 
-export default function IntroScene({ progress }: { progress?: MotionValue<number> }) {
+function EmptyHeroSlot() {
   return (
-    <section className="relative z-[2] flex min-h-[92svh] w-full flex-col items-center justify-center px-4 pb-16 pt-[7vh] text-center sm:px-6 sm:pb-20 sm:pt-[9vh]">
+    <div className="flex flex-col items-center gap-3">
+      <svg viewBox="0 0 40 60" className="h-16 w-10 opacity-40">
+        <path d="M20 58 C 20 42, 20 34, 20 20" stroke="var(--cocoa-soft)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        <ellipse cx="20" cy="16" rx="6" ry="8" fill="var(--blush-2)" opacity="0.6" />
+      </svg>
+      <p className="font-hand text-lg text-cocoa-soft/60">the first memory will bloom here</p>
+    </div>
+  );
+}
+
+function HeroContent({ p, slots }: { p: MotionValue<number>; slots: PublicSlot[] }) {
+  const heroMemory = slots[0]?.memory ?? null;
+  const t = FLOWER_TIMING;
+  const stemEnd = t.stem * 0.8;
+
+  const stemOpacity = useTransform(p, [0.1, 0.14], [0, 1]);
+  const headStart = stemEnd * 0.8;
+  const headScale = useTransform(p, [headStart, headStart + 0.12], [0.2, 1]);
+  const headOpacity = useTransform(p, [headStart, headStart + 0.06], [0, 1]);
+  const centerStart = headStart + 0.12;
+  const centerScale = useTransform(p, [centerStart, centerStart + 0.1], [0, 1]);
+  const sway = useSpring(
+    useTransform(p, [0.85, 0.95], [0, 1]),
+    { stiffness: 40, damping: 8 },
+  );
+
+  const heroOpacity = useTransform(p, [0, 0.05], [1, 1]);
+  const heroY = useTransform(p, [0, 0.3], [0, -20]);
+
+  return (
+    <SceneCamera progress={p} config={CAMERA_PRESETS.intro}>
+    <motion.div
+      className="flex min-h-[92svh] w-full flex-col items-center justify-center px-4 pb-16 pt-[7vh] text-center sm:px-6 sm:pb-20 sm:pt-[9vh]"
+      style={{ opacity: heroOpacity, y: heroY }}
+    >
       <div className="hero-in flex items-end">
         <Bubu />
         <Dudu />
@@ -69,97 +101,82 @@ export default function IntroScene({ progress }: { progress?: MotionValue<number
         scroll slowly, like flipping through our album.
       </p>
 
-      {/* fanned photo stack */}
       <div className="relative mt-12 h-[300px] w-full max-w-md sm:h-[340px]">
-        <div className="hero-in absolute left-0 top-8 w-32 rotate-[-10deg] sm:left-4 sm:w-40 [animation-delay:420ms]">
-          <Polaroid src={ph("pattu-07", 600, 800)} alt="" aspectRatio="3/4" tape />
-        </div>
-        <div className="hero-in absolute right-0 top-6 w-32 rotate-[9deg] sm:right-4 sm:w-40 [animation-delay:520ms]">
-          <Polaroid src={ph("pattu-05", 700, 900)} alt="" aspectRatio="3/4" tape />
-        </div>
-        <div className="hero-in absolute left-1/2 top-0 z-10 w-44 -translate-x-1/2 rotate-[2deg] sm:w-56 [animation-delay:340ms]">
-          <Polaroid
-            src={ph("pattu-01", 900, 1200)}
-            alt="the first photo"
-            aspectRatio="3/4"
-            caption="where it started"
+        {heroMemory ? (
+          <>
+            <div className="hero-in absolute left-0 top-8 w-32 rotate-[-10deg] sm:left-4 sm:w-40 [animation-delay:420ms]">
+              <Polaroid src={heroMemory.mediaUrl} alt="" aspectRatio="3/4" tape />
+            </div>
+            <div className="hero-in absolute right-0 top-6 w-32 rotate-[9deg] sm:right-4 sm:w-40 [animation-delay:520ms]">
+              <Polaroid src={heroMemory.mediaUrl} alt="" aspectRatio="3/4" tape />
+            </div>
+            <div className="hero-in absolute left-1/2 top-0 z-10 w-44 -translate-x-1/2 rotate-[2deg] sm:w-56 [animation-delay:340ms]">
+              <Polaroid
+                src={heroMemory.mediaUrl}
+                alt={heroMemory.title || "the first photo"}
+                aspectRatio="3/4"
+                caption={heroMemory.caption || "where it started"}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="hero-in absolute left-1/2 top-8 -translate-x-1/2 [animation-delay:340ms]">
+            <EmptyHeroSlot />
+          </div>
+        )}
+      </div>
+
+      {/* Hero flower — grows as user scrolls */}
+      <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2">
+        <svg
+          viewBox="0 0 60 80"
+          className="pointer-events-none absolute bottom-0 left-1/2 h-20 w-12 -translate-x-1/2"
+        >
+          <StemDraw
+            progress={p}
+            d="M30 78 C 30 60, 30 48, 30 30"
+            strokeWidth={2}
+            range={[0.1, stemEnd]}
           />
-        </div>
+        </svg>
+
+        <motion.div
+          className="absolute bottom-[52%] left-1/2 -translate-x-1/2"
+          style={{ scale: headScale, opacity: headOpacity, rotate: sway }}
+        >
+          <svg viewBox="-30 -30 60 60" className="h-20 w-20 sm:h-24 sm:w-24">
+            {[0, 72, 144, 216, 288].map((deg) => (
+              <path
+                key={deg}
+                d="M0 -6 C -8 -16, -8 -28, 0 -34 C 8 -28, 8 -16, 0 -6 Z"
+                fill="var(--blush-2)"
+                transform={`rotate(${deg})`}
+              />
+            ))}
+            <motion.g style={{ scale: centerScale }}>
+              <FlowerCenter size={10} />
+            </motion.g>
+          </svg>
+        </motion.div>
       </div>
 
-      {/* Growing flower at bottom — scroll-linked when progress provided */}
-      {progress && <IntroFlower progress={progress} />}
-
+      {/* Scroll indicator — botanical SVG */}
       <div className="mt-10 flex flex-col items-center gap-1 font-display text-xs uppercase tracking-[0.12em] text-cocoa-soft">
-        <span className="bob text-xl">🐾</span>
-        scroll for more
+        <svg viewBox="0 0 24 40" className="h-8 w-5 text-cocoa-soft/50" aria-hidden>
+          <path d="M12 38 C 12 28, 12 22, 12 12" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+          <ellipse cx="12" cy="10" rx="3" ry="4" fill="currentColor" opacity="0.4" />
+        </svg>
+        scroll slowly
       </div>
-
-      <FloatingDoodle
-        kind="sparkle"
-        className="absolute left-[12%] top-[18%] h-7 w-7 text-gold/70"
-      />
-      <FloatingDoodle
-        kind="heart"
-        className="absolute right-[10%] top-[26%] h-6 w-6 text-rose/60"
-      />
-    </section>
+    </motion.div>
+    </SceneCamera>
   );
 }
 
-// ── Intro flower — grows as user scrolls past hero ────────────────
-
-function IntroFlower({ progress }: { progress: MotionValue<number> }) {
-  const t = FLOWER_TIMING;
-  const stemEnd = t.stem * 0.8;
-
-  const stemLength = useTransform(progress, [0.1, stemEnd], [0, 1]);
-  const stemOpacity = useTransform(progress, [0.1, 0.14], [0, 1]);
-
-  const headStart = stemEnd * 0.8;
-  const headScale = useTransform(progress, [headStart, headStart + 0.12], [0.2, 1]);
-  const headOpacity = useTransform(progress, [headStart, headStart + 0.06], [0, 1]);
-
-  const centerStart = headStart + 0.12;
-  const centerScale = useTransform(progress, [centerStart, centerStart + 0.1], [0, 1]);
-
-  const sway = useSpring(
-    useTransform(progress, [0.85, 0.95], [0, 1]),
-    { stiffness: 40, damping: 8 },
-  );
-
+export default function IntroScene({ slots }: { slots: PublicSlot[] }) {
   return (
-    <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2">
-      <svg
-        viewBox="0 0 60 80"
-        className="pointer-events-none absolute bottom-0 left-1/2 h-20 w-12 -translate-x-1/2"
-      >
-        <StemDraw
-          progress={progress}
-          d="M30 78 C 30 60, 30 48, 30 30"
-          strokeWidth={2}
-          range={[0.1, stemEnd]}
-        />
-      </svg>
-
-      <motion.div
-        className="absolute bottom-[52%] left-1/2 -translate-x-1/2"
-        style={{ scale: headScale, opacity: headOpacity, rotate: sway }}
-      >
-        <svg viewBox="-30 -30 60 60" className="h-12 w-12">
-          {[0, 72, 144, 216, 288].map((deg) => (
-            <path
-              key={deg}
-              d="M0 -6 C -8 -16, -8 -28, 0 -34 C 8 -28, 8 -16, 0 -6 Z"
-              fill="var(--blush-2)"
-              transform={`rotate(${deg})`}
-            />
-          ))}
-          <motion.g style={{ scale: centerScale }}>
-            <FlowerCenter size={10} />
-          </motion.g>
-        </svg>
-      </motion.div>
-    </div>
+    <SceneShell vh={200}>
+      {(p) => <HeroContent p={p} slots={slots} />}
+    </SceneShell>
   );
 }

@@ -75,7 +75,7 @@ export default function GerminationSequence({
       {/* Stem */}
       <svg
         viewBox="0 0 60 80"
-        className="pointer-events-none absolute bottom-0 left-1/2 h-20 w-12 -translate-x-1/2"
+        className="pointer-events-none absolute bottom-0 left-1/2 h-32 w-16 -translate-x-1/2"
       >
         <StemDraw
           progress={progress}
@@ -118,7 +118,7 @@ export default function GerminationSequence({
         className="absolute left-1/2 -translate-x-1/2"
         style={{ bottom: "68%", scale: bloomScale, opacity: bloomOpacity }}
       >
-        <svg viewBox="-30 -30 60 60" className="h-10 w-10">
+        <svg viewBox="-30 -30 60 60" className="h-16 w-16 sm:h-20 sm:w-20">
           {[0, 72, 144, 216, 288].map((deg) => (
             <path
               key={deg}
@@ -136,7 +136,7 @@ export default function GerminationSequence({
       {/* Memory card */}
       {config.memory && memOpacity && memY && (
         <motion.div
-          className="absolute left-1/2 w-28 -translate-x-1/2 sm:w-32"
+          className="absolute left-1/2 w-32 -translate-x-1/2 sm:w-40"
           style={{ bottom: "80%", opacity: memOpacity, y: memY }}
         >
           <PaperCard

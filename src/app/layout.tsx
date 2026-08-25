@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
-import { Caveat, Fredoka, Geist_Mono, Quicksand } from "next/font/google";
+import { Caveat, DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 
-const quicksand = Quicksand({
-  variable: "--font-quicksand",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const caveat = Caveat({
@@ -26,7 +21,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "bubu & dudu 🐼🐻",
+  title: "bubu & dudu",
   description: "every little moment — a private scrapbook for him.",
 };
 
@@ -34,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${quicksand.variable} ${fredoka.variable} ${geistMono.variable} ${caveat.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${fraunces.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
