@@ -30,10 +30,12 @@ export async function PATCH(request: Request, { params }: Params) {
     }
     if (input.date !== undefined) update.date = input.date ? new Date(input.date) : null;
     if (input.visibility !== undefined) update.visibility = input.visibility;
+    if (input.placement !== undefined) update.placement = input.placement;
     if (input.sceneId !== undefined) {
       update.sceneId = input.sceneId;
-      // changing scene resets slot unless a valid slot accompanies it
       update.slotId = input.slotId ?? null;
+      // auto-set placement based on scene assignment
+      update.placement = input.sceneId ? "story" : "archive";
     } else if (input.slotId !== undefined) {
       update.slotId = input.slotId;
     }
@@ -57,7 +59,6 @@ export async function DELETE(_request: Request, { params }: Params) {
     const memory = await Memory.findByIdAndDelete(id);
     if (!memory) return NextResponse.json({ error: "Memory not found" }, { status: 404 });
 
-    // remove the backing asset record + Cloudinary source
     if (memory.cloudinaryPublicId && !memory.cloudinaryPublicId.startsWith("placeholder/")) {
       try {
         requireCloudinaryEnv();
@@ -66,7 +67,6 @@ export async function DELETE(_request: Request, { params }: Params) {
         });
       } catch (err) {
         console.error("[admin/memories DELETE] cloudinary destroy:", err);
-        // memory is gone; orphaned asset is not fatal
       }
     }
     await MediaAsset.deleteOne({ publicId: memory.cloudinaryPublicId });

@@ -5,24 +5,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import UploadMemory from "./UploadMemory";
 import MemoryEditor from "./MemoryEditor";
+import type { AdminMemory } from "@/types/admin";
 
-export type AdminMemory = {
-  _id: string;
-  title: string;
-  caption: string;
-  mediaType: "image" | "video";
-  thumbnailUrl: string;
-  cloudinaryPublicId: string;
-  category: string;
-  date?: string | null;
-  location: string | null;
-  sceneId: string | null;
-  slotId: string | null;
-  featured: boolean;
-  visibility: "public" | "hidden";
-  objectPosition?: string | null;
-  displayMode?: string | null;
-};
+export type { AdminMemory };
 
 export default function MemoriesDashboard({ memories }: { memories: AdminMemory[] }) {
   const router = useRouter();

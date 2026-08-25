@@ -1,41 +1,50 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CATEGORIES, DISPLAY_MODES, STORY_SCENES } from "@/config/scenes";
-import { inputCls, labelCls } from "./formCls";
+import FileDropzone from "./upload/FileDropzone";
+import UploadProgress from "./upload/UploadProgress";
+import MemoryMetadataForm from "./upload/MemoryMetadataForm";
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
-type Phase = "idle" | "signing" | "uploading" | "saving" | "error";
+type Phase = "idle" | "signing" | "uploading" | "saving" | "success" | "error" | "cancelled";
+
+function humanError(msg: string): string {
+  if (msg === "cancelled") return "Upload cancelled.";
+  if (msg.includes("network")) return "Network error during upload. Please check your connection and try again.";
+  if (msg.includes("could not start")) return "Could not prepare the upload. Please try again.";
+  if (msg.includes("upload failed")) return "The upload to Cloudinary failed. Please try again.";
+  if (msg.includes("could not save")) return "The file was uploaded but could not be saved. The uploaded file may be cleaned up automatically.";
+  if (msg.includes("memory could not be created")) return "The file was uploaded but the memory could not be created. The uploaded file has been cleaned up.";
+  return msg;
+}
 
 export default function UploadMemory({ onDone }: { onDone: () => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [dragOver, setDragOver] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
-  const [featureInStory, setFeatureInStory] = useState(false);
-  const [sceneSlug, setSceneSlug] = useState(STORY_SCENES[0].slug);
 
-  function pickFile(f: File | undefined | null) {
-    if (!f) return;
+  const busy = phase === "signing" || phase === "uploading" || phase === "saving";
+  const previewUrl = file && IMAGE_TYPES.includes(file.type) ? URL.createObjectURL(file) : null;
+
+  function pickFile(f: File) {
     const isImage = IMAGE_TYPES.includes(f.type);
     const isVideo = VIDEO_TYPES.includes(f.type);
     if (!isImage && !isVideo) {
-      setErrorMsg("only jpg / png / webp images or mp4 / webm / mov videos");
+      setErrorMsg("Only JPG, PNG, WebP images or MP4, WebM, MOV videos are supported.");
       return;
     }
     if (isImage && f.size > MAX_IMAGE_BYTES) {
-      setErrorMsg("images up to 20 MB please");
+      setErrorMsg("Image too large. Maximum size is 20 MB.");
       return;
     }
     if (isVideo && f.size > MAX_VIDEO_BYTES) {
-      setErrorMsg("videos up to 100 MB please");
+      setErrorMsg("Video too large. Maximum size is 100 MB.");
       return;
     }
     setErrorMsg("");
@@ -44,15 +53,39 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
     setFile(f);
   }
 
-  async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!file || phase === "signing" || phase === "uploading" || phase === "saving") return;
+  async function cleanupCloudinary(publicId: string, mediaType: string) {
+    try {
+      await fetch("/api/admin/media", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicId }),
+      });
+    } catch {
+      // best-effort cleanup
+    }
+  }
+
+  async function handleUpload(metadata: {
+    title: string;
+    caption: string;
+    date: string;
+    location: string;
+    category: string;
+    visibility: "public" | "hidden";
+    featured: boolean;
+    addToStory: boolean;
+    sceneSlug: string;
+    slotId: string;
+    displayMode: string;
+  }) {
+    if (!file || busy) return;
     setErrorMsg("");
-    const form = new FormData(e.currentTarget);
-    const mediaType = VIDEO_TYPES.includes(file.type) ? "video" : "image";
+
+    let cloudinaryResult: { public_id: string; secure_url: string; width?: number; height?: number; format?: string; bytes?: number; duration?: number } | undefined;
 
     try {
-      // 1. signature (server dictates folder + formats)
+      // 1. Signature
+      const mediaType = VIDEO_TYPES.includes(file.type) ? "video" : "image";
       setPhase("signing");
       const signRes = await fetch("/api/upload/sign", {
         method: "POST",
@@ -62,17 +95,9 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
       if (!signRes.ok) throw new Error("could not start upload");
       const signed = await signRes.json();
 
-      // 2. direct upload to Cloudinary with progress
+      // 2. Direct upload to Cloudinary
       setPhase("uploading");
-      const cloudinaryResult = await new Promise<{
-        public_id: string;
-        secure_url: string;
-        width?: number;
-        height?: number;
-        format?: string;
-        bytes?: number;
-        duration?: number;
-      }>((resolve, reject) => {
+      cloudinaryResult = await new Promise((resolve, reject) => {
         const fd = new FormData();
         fd.append("file", file);
         fd.append("api_key", signed.apiKey);
@@ -101,7 +126,9 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
         xhr.send(fd);
       });
 
-      // 3. persist asset record
+      if (!cloudinaryResult) throw new Error("upload failed");
+
+      // 3. Persist asset record
       setPhase("saving");
       const assetRes = await fetch("/api/upload", {
         method: "POST",
@@ -119,217 +146,99 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
       });
       if (!assetRes.ok) throw new Error("could not save the uploaded file");
 
-      // 4. create the memory
-      const sceneId = featureInStory ? sceneSlug : null;
-      const slotId = featureInStory ? form.get("slotId") : null;
-      const dateVal = form.get("date");
+      // 4. Create memory
+      const sceneId = metadata.addToStory ? metadata.sceneSlug : null;
+      const slotId = metadata.addToStory ? metadata.slotId : null;
       const memoryRes = await fetch("/api/admin/memories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: form.get("title") ?? "",
-          caption: form.get("caption") ?? "",
+          title: metadata.title,
+          caption: metadata.caption,
           mediaType,
           publicId: cloudinaryResult.public_id,
-          date: dateVal ? new Date(String(dateVal)).toISOString() : null,
-          location: form.get("location") ?? "",
-          category: form.get("category"),
+          date: metadata.date ? new Date(metadata.date).toISOString() : null,
+          location: metadata.location,
+          category: metadata.category,
           sceneId,
           slotId,
-          featured: form.get("featured") === "on",
-          visibility: form.get("publish") === "on" ? "public" : "hidden",
-          displayMode: featureInStory ? form.get("displayMode") : "inline",
+          featured: metadata.featured,
+          visibility: metadata.visibility,
+          displayMode: metadata.addToStory ? metadata.displayMode : "inline",
         }),
       });
-      if (!memoryRes.ok) throw new Error("file uploaded but memory could not be created");
+      if (!memoryRes.ok) {
+        // Recovery: clean up the Cloudinary asset since memory creation failed
+        if (cloudinaryResult) await cleanupCloudinary(cloudinaryResult.public_id, mediaType);
+        throw new Error("file uploaded but memory could not be created. The uploaded file has been cleaned up.");
+      }
 
-      onDone();
+      setPhase("success");
+      setTimeout(() => onDone(), 500);
     } catch (err) {
       setPhase("error");
-      setErrorMsg(err instanceof Error ? err.message : "something went wrong");
+      setErrorMsg(humanError(err instanceof Error ? err.message : "something went wrong"));
     } finally {
       xhrRef.current = null;
     }
   }
 
-  const busy = phase === "signing" || phase === "uploading" || phase === "saving";
-  const slots = STORY_SCENES.find((s) => s.slug === sceneSlug)?.slots ?? [];
-  const previewUrl = file && IMAGE_TYPES.includes(file.type) ? URL.createObjectURL(file) : null;
+  function handleCancel() {
+    xhrRef.current?.abort();
+    setPhase("cancelled");
+    setErrorMsg("");
+  }
+
+  function handleRetry() {
+    setPhase("idle");
+    setErrorMsg("");
+    setProgress(0);
+  }
 
   return (
-    <form
-      onSubmit={handleUpload}
-      className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4"
-    >
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          pickFile(e.dataTransfer.files?.[0]);
-        }}
-        onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors ${
-          dragOver ? "border-deep-sage bg-sage/20" : "border-border hover:border-text-secondary/50"
-        }`}
-      >
-        {previewUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={previewUrl} alt="" className="max-h-32 rounded-md object-contain" />
-        ) : (
-          <>
-            <p className="text-sm">{file ? file.name : "drag a photo or video here"}</p>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-text-secondary">
-              or click to browse · jpg png webp mp4 webm mov
-            </p>
-          </>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
-          className="hidden"
-          onChange={(e) => pickFile(e.target.files?.[0])}
-        />
-      </div>
+    <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4">
+      <FileDropzone file={file} previewUrl={previewUrl} onFile={pickFile} />
 
-      {phase === "uploading" && (
-        <div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
-            <div
-              className="h-full rounded-full bg-deep-sage transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="mt-1 text-right font-mono text-[10px] text-text-secondary">{progress}%</p>
-        </div>
+      {phase === "uploading" && <UploadProgress progress={progress} />}
+
+      {file && phase !== "success" && (
+        <MemoryMetadataForm onSubmit={handleUpload} busy={busy} />
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <label className={labelCls}>
-          title
-          <input name="title" className={inputCls} />
-        </label>
-        <label className="col-span-2 flex flex-col gap-1 text-xs text-text-secondary sm:col-span-2">
-          caption
-          <input name="caption" className={inputCls} />
-        </label>
-        <label className={labelCls}>
-          date
-          <input type="date" name="date" className={inputCls} />
-        </label>
-        <label className={labelCls}>
-          category
-          <select name="category" className={inputCls}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </label>
-        <label className={labelCls}>
-          location
-          <input name="location" className={inputCls} />
-        </label>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-        <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <input type="checkbox" name="publish" defaultChecked id="um-publish" className="accent-[#506454]" />
-          <label htmlFor="um-publish">visible on site</label>
-        </span>
-        <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <input type="checkbox" name="featured" id="um-featured" className="accent-[#b85c5c]" />
-          <label htmlFor="um-featured">favorite</label>
-        </span>
-        <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <input
-            type="checkbox"
-            id="um-story"
-            checked={featureInStory}
-            onChange={(e) => setFeatureInStory(e.target.checked)}
-            className="accent-[#506454]"
-          />
-          <label htmlFor="um-story">feature in story</label>
-        </span>
-      </div>
-
-      {featureInStory && (
-        <div className="grid grid-cols-3 gap-3">
-          <label className={labelCls}>
-            scene
-            <select
-              value={sceneSlug}
-              onChange={(e) => setSceneSlug(e.target.value)}
-              className={inputCls}
-            >
-              {STORY_SCENES.map((s) => (
-                <option key={s.slug} value={s.slug}>{s.slug} · {s.title}</option>
-              ))}
-            </select>
-          </label>
-          <label className={labelCls}>
-            slot
-            <select name="slotId" className={inputCls}>
-              {slots.map((sl) => (
-                <option key={sl.id} value={sl.id}>{sl.id} ({sl.label})</option>
-              ))}
-            </select>
-          </label>
-          <label className={labelCls}>
-            display mode
-            <select name="displayMode" defaultValue="inline" className={inputCls}>
-              {DISPLAY_MODES.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-          </label>
-        </div>
+      {phase === "success" && (
+        <p className="text-center text-sm text-deep-sage">uploaded ✓</p>
       )}
 
       {errorMsg && (
-        <p className="text-xs text-warm-red">
-          {errorMsg}
-          {(phase === "error" && file) && (
-            <button type="submit" className="ml-2 underline">retry</button>
+        <div className="flex items-start gap-2 rounded-lg bg-warm-red/10 px-3 py-2">
+          <p className="flex-1 text-xs text-warm-red">{errorMsg}</p>
+          {phase === "error" && (
+            <button onClick={handleRetry} className="shrink-0 text-xs font-medium text-warm-red underline">
+              retry
+            </button>
           )}
-        </p>
+        </div>
       )}
 
-      <div className="flex items-center justify-end gap-2">
+      {phase === "cancelled" && (
+        <p className="text-center text-xs text-text-secondary">upload cancelled</p>
+      )}
+
+      <div className="flex justify-end gap-2">
         {phase === "uploading" && (
-          <button
-            type="button"
-            onClick={() => xhrRef.current?.abort()}
-            className="rounded-full px-3 py-1.5 text-xs text-text-secondary hover:text-warm-red"
-          >
+          <button onClick={handleCancel} className="rounded-full px-3 py-1.5 text-xs text-text-secondary hover:text-warm-red">
             cancel upload
           </button>
         )}
-        {!busy && (
+        {file && !busy && phase !== "success" && (
           <button
-            type="button"
-            onClick={() => {
-              setFile(null);
-              setPhase("idle");
-              setErrorMsg("");
-            }}
+            onClick={() => { setFile(null); setPhase("idle"); setErrorMsg(""); }}
             className="rounded-full px-3 py-1.5 text-xs text-text-secondary"
           >
             clear
           </button>
         )}
-        <button
-          type="submit"
-          disabled={!file || busy}
-          className="rounded-full bg-deep-sage px-4 py-1.5 text-xs font-medium text-cream disabled:opacity-40"
-        >
-          {busy ? "working…" : "add memory"}
-        </button>
       </div>
-    </form>
+    </div>
   );
 }

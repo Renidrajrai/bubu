@@ -13,6 +13,7 @@ export const memoryCreateSchema = z.object({
   slotId: z.string().regex(/^[a-z0-9-]+$/).nullable(),
   featured: z.boolean().default(false),
   visibility: z.enum(["public", "hidden"]).default("public"),
+  placement: z.enum(["story", "archive"]).default("archive"),
   objectPosition: z.string().max(50).default("center"),
   displayMode: z.enum(DISPLAY_MODES).default("inline"),
 });

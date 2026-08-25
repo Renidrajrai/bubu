@@ -16,6 +16,7 @@ const memorySchema = new Schema(
     order: { type: Number, default: 0 },
     featured: { type: Boolean, default: false },
     visibility: { type: String, enum: ["public", "hidden"], default: "public" },
+    placement: { type: String, enum: ["story", "archive"], default: "archive" },
     objectPosition: { type: String, default: "center" },
     displayMode: {
       type: String,

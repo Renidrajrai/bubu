@@ -155,4 +155,14 @@ body {
   .float-up {
     animation: none !important;
   }
+
+  /* §125: disable CSS transitions and transforms for reduced motion */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

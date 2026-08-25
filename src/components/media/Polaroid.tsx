@@ -1,6 +1,9 @@
 import MediaSlot from "./MediaSlot";
+import type { PaperVariant } from "@/types/story";
+import { PAPER_VARIANTS } from "@/config/animation";
 
 // White polaroid frame from the reference design: tape, Caveat caption, date stamp.
+// §85, §117: paperVariant adds rotation/tilt/blur for scrapbook feel.
 export default function Polaroid({
   src,
   alt = "",
@@ -8,7 +11,9 @@ export default function Polaroid({
   caption,
   stamp,
   tape = false,
+  paperVariant,
   className = "",
+  style,
 }: {
   src: string;
   alt?: string;
@@ -16,11 +21,24 @@ export default function Polaroid({
   caption?: string;
   stamp?: string;
   tape?: boolean;
+  paperVariant?: PaperVariant;
   className?: string;
+  style?: React.CSSProperties;
 }) {
+  const variant = paperVariant ? PAPER_VARIANTS[paperVariant] : null;
+
   return (
     <figure
       className={`rounded-md bg-cloud p-2.5 pb-3 shadow-soft transition-all duration-300 [transition-timing-function:var(--ease-pop)] hover:-translate-y-1 hover:scale-[1.04] hover:shadow-lift ${className}`}
+      style={{
+        ...style,
+        ...(variant
+          ? {
+              transform: `rotate(${variant.rotation}deg) skewX(${variant.tilt}deg)`,
+              filter: variant.blur > 0 ? `blur(${variant.blur}px)` : undefined,
+            }
+          : {}),
+      }}
     >
       <div className="relative">
         <MediaSlot aspectRatio={aspectRatio} src={src} alt={alt} className="rounded-sm" />

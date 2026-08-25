@@ -1,6 +1,15 @@
+"use client";
+
+import { motion, useTransform, useSpring, type MotionValue } from "motion/react";
 import FloatingDoodle from "../animation/FloatingDoodle";
 import Polaroid from "../media/Polaroid";
+import { FlowerCenter } from "@/assets/flowers";
+import StemDraw from "../story/StemDraw";
 import { ph } from "./placeholders";
+import { FLOWER_TIMING } from "@/config/animation";
+
+// §99: Intro scene — first flower grows as you scroll.
+// Bubu & Dudu + fanned stack + growing flower at bottom.
 
 function Bubu() {
   return (
@@ -38,11 +47,9 @@ function Dudu() {
   );
 }
 
-// Hero — bubu & dudu introduce the scrapbook; the featured photo sits front
-// of a fanned stack that gently floats.
-export default function IntroScene() {
+export default function IntroScene({ progress }: { progress?: MotionValue<number> }) {
   return (
-    <section className="relative z-[2] flex min-h-[92svh] w-full flex-col items-center justify-center px-6 pb-20 pt-[9vh] text-center">
+    <section className="relative z-[2] flex min-h-[92svh] w-full flex-col items-center justify-center px-4 pb-16 pt-[7vh] text-center sm:px-6 sm:pb-20 sm:pt-[9vh]">
       <div className="hero-in flex items-end">
         <Bubu />
         <Dudu />
@@ -80,6 +87,9 @@ export default function IntroScene() {
         </div>
       </div>
 
+      {/* Growing flower at bottom — scroll-linked when progress provided */}
+      {progress && <IntroFlower progress={progress} />}
+
       <div className="mt-10 flex flex-col items-center gap-1 font-display text-xs uppercase tracking-[0.12em] text-cocoa-soft">
         <span className="bob text-xl">🐾</span>
         scroll for more
@@ -94,5 +104,62 @@ export default function IntroScene() {
         className="absolute right-[10%] top-[26%] h-6 w-6 text-rose/60"
       />
     </section>
+  );
+}
+
+// ── Intro flower — grows as user scrolls past hero ────────────────
+
+function IntroFlower({ progress }: { progress: MotionValue<number> }) {
+  const t = FLOWER_TIMING;
+  const stemEnd = t.stem * 0.8;
+
+  const stemLength = useTransform(progress, [0.1, stemEnd], [0, 1]);
+  const stemOpacity = useTransform(progress, [0.1, 0.14], [0, 1]);
+
+  const headStart = stemEnd * 0.8;
+  const headScale = useTransform(progress, [headStart, headStart + 0.12], [0.2, 1]);
+  const headOpacity = useTransform(progress, [headStart, headStart + 0.06], [0, 1]);
+
+  const centerStart = headStart + 0.12;
+  const centerScale = useTransform(progress, [centerStart, centerStart + 0.1], [0, 1]);
+
+  const sway = useSpring(
+    useTransform(progress, [0.85, 0.95], [0, 1]),
+    { stiffness: 40, damping: 8 },
+  );
+
+  return (
+    <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2">
+      <svg
+        viewBox="0 0 60 80"
+        className="pointer-events-none absolute bottom-0 left-1/2 h-20 w-12 -translate-x-1/2"
+      >
+        <StemDraw
+          progress={progress}
+          d="M30 78 C 30 60, 30 48, 30 30"
+          strokeWidth={2}
+          range={[0.1, stemEnd]}
+        />
+      </svg>
+
+      <motion.div
+        className="absolute bottom-[52%] left-1/2 -translate-x-1/2"
+        style={{ scale: headScale, opacity: headOpacity, rotate: sway }}
+      >
+        <svg viewBox="-30 -30 60 60" className="h-12 w-12">
+          {[0, 72, 144, 216, 288].map((deg) => (
+            <path
+              key={deg}
+              d="M0 -6 C -8 -16, -8 -28, 0 -34 C 8 -28, 8 -16, 0 -6 Z"
+              fill="var(--blush-2)"
+              transform={`rotate(${deg})`}
+            />
+          ))}
+          <motion.g style={{ scale: centerScale }}>
+            <FlowerCenter size={10} />
+          </motion.g>
+        </svg>
+      </motion.div>
+    </div>
   );
 }
