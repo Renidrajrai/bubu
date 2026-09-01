@@ -11,10 +11,10 @@ type Props = {
 
 export default function MediaDetail({ asset, linkedMemory, onClose, onDelete }: Props) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-chocolate/30 p-4" role="dialog" aria-modal="true">
       <div className="flex max-h-[80vh] w-full max-w-md flex-col rounded-xl bg-surface p-5 shadow-[var(--shadow-lift)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-medium">media detail</h2>
+          <h2 className="font-display text-sm font-medium">media detail</h2>
           <button onClick={onClose} className="text-xs text-text-secondary hover:text-text-primary">
             close
           </button>
@@ -64,7 +64,7 @@ export default function MediaDetail({ asset, linkedMemory, onClose, onDelete }: 
         </dl>
 
         {asset.isOrphan && (
-          <p className="mt-3 rounded-lg bg-warm-red/10 px-3 py-2 text-[10px] text-warm-red">
+          <p className="mt-3 rounded-lg bg-rose/10 px-3 py-2 text-[10px] text-rose">
             This asset is not currently used by any memory.
           </p>
         )}
@@ -79,7 +79,7 @@ export default function MediaDetail({ asset, linkedMemory, onClose, onDelete }: 
           {onDelete && (
             <button
               onClick={onDelete}
-              className="rounded-full bg-warm-red/10 px-3 py-1.5 text-[10px] text-warm-red hover:bg-warm-red/20"
+              className="rounded-full bg-rose/10 px-3 py-1.5 text-[10px] text-rose hover:bg-rose/20"
             >
               delete orphan
             </button>

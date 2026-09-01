@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORIES, DISPLAY_MODES, STORY_SCENES } from "@/config/scenes";
+import { CATEGORIES, DISPLAY_MODES } from "@/config/scenes";
 import { inputCls, labelCls } from "../formCls";
 
 type Props = {
@@ -9,23 +9,15 @@ type Props = {
     title: string;
     caption: string;
     date: string;
-    location: string;
     category: string;
     visibility: "public" | "hidden";
     featured: boolean;
-    addToStory: boolean;
-    sceneSlug: string;
-    slotId: string;
     displayMode: string;
   }) => void;
   busy: boolean;
 };
 
 export default function MemoryMetadataForm({ onSubmit, busy }: Props) {
-  const [addToStory, setAddToStory] = useState(false);
-  const [sceneSlug, setSceneSlug] = useState(STORY_SCENES[0].slug);
-  const slots = STORY_SCENES.find((s) => s.slug === sceneSlug)?.slots ?? [];
-
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -33,13 +25,9 @@ export default function MemoryMetadataForm({ onSubmit, busy }: Props) {
       title: (form.get("title") as string) ?? "",
       caption: (form.get("caption") as string) ?? "",
       date: (form.get("date") as string) ?? "",
-      location: (form.get("location") as string) ?? "",
       category: (form.get("category") as string) ?? "everyday",
       visibility: form.get("publish") === "on" ? "public" : "hidden",
       featured: form.get("featured") === "on",
-      addToStory,
-      sceneSlug,
-      slotId: (form.get("slotId") as string) ?? "",
       displayMode: (form.get("displayMode") as string) ?? "inline",
     });
   }
@@ -68,10 +56,20 @@ export default function MemoryMetadataForm({ onSubmit, busy }: Props) {
           </select>
         </label>
         <label className={labelCls}>
-          location
-          <input name="location" className={inputCls} />
+          display mode
+          <select name="displayMode" defaultValue="inline" className={inputCls}>
+            {DISPLAY_MODES.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
         </label>
       </div>
+
+      <p className="text-[10px] text-text-secondary">
+        Tip: set category to a page section (hero, eyes, cameraroll, poster,
+        candid, final) to place it on the site — or use the Story page to sort
+        sections later.
+      </p>
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         <span className="flex items-center gap-1.5 text-xs text-text-secondary">
@@ -82,52 +80,13 @@ export default function MemoryMetadataForm({ onSubmit, busy }: Props) {
           <input type="checkbox" name="featured" id="um-featured" className="accent-[var(--cocoa)]" />
           <label htmlFor="um-featured">favorite</label>
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <input
-            type="checkbox"
-            id="um-story"
-            checked={addToStory}
-            onChange={(e) => setAddToStory(e.target.checked)}
-            className="accent-[var(--cocoa)]"
-          />
-          <label htmlFor="um-story">add to story</label>
-        </span>
       </div>
-
-      {addToStory && (
-        <div className="grid grid-cols-3 gap-3">
-          <label className={labelCls}>
-            scene
-            <select value={sceneSlug} onChange={(e) => setSceneSlug(e.target.value)} className={inputCls}>
-              {STORY_SCENES.map((s) => (
-                <option key={s.slug} value={s.slug}>{s.title}</option>
-              ))}
-            </select>
-          </label>
-          <label className={labelCls}>
-            slot
-            <select name="slotId" className={inputCls}>
-              {slots.map((sl) => (
-                <option key={sl.id} value={sl.id}>{sl.label}</option>
-              ))}
-            </select>
-          </label>
-          <label className={labelCls}>
-            display mode
-            <select name="displayMode" defaultValue="inline" className={inputCls}>
-              {DISPLAY_MODES.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-      )}
 
       <div className="flex justify-end gap-2 pt-1">
         <button
           type="submit"
           disabled={busy}
-          className="rounded-full bg-deep-sage px-4 py-1.5 text-xs font-medium text-cream disabled:opacity-40"
+          className="rounded-full bg-cocoa px-4 py-1.5 text-xs font-medium text-cream disabled:opacity-40"
         >
           {busy ? "uploading…" : "upload memory"}
         </button>

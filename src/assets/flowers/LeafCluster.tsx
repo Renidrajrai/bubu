@@ -4,7 +4,7 @@ import Leaf from "./Leaf";
 export default function LeafCluster({
   count = 2,
   size = 20,
-  color = "var(--sage)",
+  color = "var(--leaf-green)",
   className = "",
 }: {
   count?: number;

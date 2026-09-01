@@ -34,13 +34,13 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-chocolate/30 p-4"
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
       <div className="flex max-w-sm flex-col gap-3 rounded-xl bg-surface p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="text-sm font-medium">{title}</h2>
+        <h2 className="font-display text-sm font-medium">{title}</h2>
         <p className="text-xs text-text-secondary">{description}</p>
         <div className="flex justify-end gap-2">
           <button
@@ -53,7 +53,7 @@ export default function ConfirmDialog({
           <button
             onClick={onConfirm}
             className={`rounded-full px-3 py-1.5 text-xs font-medium text-cream ${
-              danger ? "bg-warm-red" : "bg-deep-sage"
+              danger ? "bg-rose" : "bg-cocoa"
             }`}
           >
             {confirmLabel}

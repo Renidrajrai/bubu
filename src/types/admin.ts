@@ -1,5 +1,3 @@
-import type { StoryScene } from "@/config/scenes";
-
 // ── Memory ──────────────────────────────────────────────────────────
 
 export type AdminMemory = {
@@ -11,10 +9,8 @@ export type AdminMemory = {
   cloudinaryPublicId: string;
   cloudinaryUrl: string;
   category: string;
+  slot?: number | null;
   date?: string | null;
-  location: string | null;
-  sceneId: string | null;
-  slotId: string | null;
   placement: "story" | "archive";
   order: number;
   featured: boolean;
@@ -23,18 +19,6 @@ export type AdminMemory = {
   displayMode?: string | null;
   createdAt?: string;
   updatedAt?: string;
-};
-
-// ── Scene ───────────────────────────────────────────────────────────
-
-export type AdminScene = {
-  _id: string;
-  slug: string;
-  title: string;
-  order: number;
-  enabled: boolean;
-  background: string;
-  createdAt?: string;
 };
 
 // ── Media Asset ─────────────────────────────────────────────────────
@@ -95,22 +79,4 @@ export type MemoryFilters = {
   sort?: MemorySortOption;
   page?: number;
   limit?: number;
-};
-
-// ── Story ───────────────────────────────────────────────────────────
-
-export type StoryHealthStatus = {
-  scene: StoryScene;
-  configured: boolean;
-  assignedCount: number;
-  emptyCount: number;
-  conflictCount: number;
-  dbSceneEnabled: boolean;
-};
-
-export type SlotAssignment = {
-  sceneSlug: string;
-  slotId: string;
-  memory?: AdminMemory;
-  status: "assigned" | "empty" | "conflict";
 };

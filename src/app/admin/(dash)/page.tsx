@@ -1,32 +1,33 @@
 import { connectDB } from "@/lib/mongodb";
 import { Memory } from "@/models/Memory";
 import { MediaAsset } from "@/models/MediaAsset";
-import { Scene } from "@/models/Scene";
-import { STORY_SCENES } from "@/config/scenes";
-import type { StoryHealthStatus } from "@/types/admin";
+import { ZINE_SECTIONS } from "@/config/sections";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   await connectDB();
 
-  const [allMemories, assets, dbScenes] = await Promise.all([
+  const [allMemories, assets] = await Promise.all([
     Memory.find()
-      .select("title thumbnailUrl mediaType visibility sceneId slotId placement featured createdAt")
+      .select("title thumbnailUrl mediaType visibility category placement featured createdAt")
       .sort({ createdAt: -1 })
       .lean(),
     MediaAsset.find().select("publicId").lean(),
-    Scene.find().lean(),
   ]);
 
   // Stats
   const total = allMemories.length;
   const publicCount = allMemories.filter((m) => m.visibility === "public").length;
   const hiddenCount = total - publicCount;
-  const storyCount = allMemories.filter((m) => m.placement === "story").length;
-  const archiveCount = total - storyCount;
   const imageCount = allMemories.filter((m) => m.mediaType === "image").length;
   const videoCount = total - imageCount;
+
+  // Section coverage — how many live-page sections have at least one photo
+  const sectionCounts = ZINE_SECTIONS.map((s) => ({
+    ...s,
+    count: allMemories.filter((m) => m.category === s.category).length,
+  }));
 
   // Orphan detection
   const usedPublicIds = new Set(
@@ -34,43 +35,12 @@ export default async function AdminDashboard() {
   );
   const orphanCount = assets.filter((a) => !usedPublicIds.has(a.publicId)).length;
 
-  // Story health
-  const storyMemories = allMemories.filter((m) => m.sceneId && m.slotId);
-  const occupiedSlots = new Map<string, string>(); // slotId → memoryId
-  const conflicts: string[] = [];
-  for (const m of storyMemories) {
-    const key = m.slotId!;
-    if (occupiedSlots.has(key)) {
-      conflicts.push(key);
-    } else {
-      occupiedSlots.set(key, String(m._id));
-    }
-  }
-
-  const storyHealth: StoryHealthStatus[] = STORY_SCENES.map((scene) => {
-    const dbScene = dbScenes.find((s) => s.slug === scene.slug);
-    const assignedCount = scene.slots.filter((sl) => occupiedSlots.has(sl.id)).length;
-    const emptyCount = scene.slots.length - assignedCount;
-    const conflictCount = scene.slots.filter((sl) => conflicts.includes(sl.id)).length;
-    return {
-      scene,
-      configured: dbScene?.enabled ?? false,
-      assignedCount,
-      emptyCount,
-      conflictCount,
-      dbSceneEnabled: dbScene?.enabled ?? false,
-    };
-  });
-
-  const totalSlots = STORY_SCENES.reduce((n, s) => n + s.slots.length, 0);
-  const occupiedSlotCount = occupiedSlots.size;
-
   // Recent memories (top 8)
   const recent = allMemories.slice(0, 8);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <h1 className="text-lg font-medium">dashboard</h1>
+      <h1 className="font-display text-lg font-medium">dashboard</h1>
 
       {/* ── Stat Cards ─────────────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -78,7 +48,6 @@ export default async function AdminDashboard() {
           { label: "Memories", value: total },
           { label: "Public", value: publicCount },
           { label: "Hidden", value: hiddenCount },
-          { label: "Story", value: `${storyCount}` },
           { label: "Images", value: imageCount },
           { label: "Videos", value: videoCount },
         ].map((s) => (
@@ -89,29 +58,24 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      {/* ── Story Health ───────────────────────────────────────── */}
+      {/* ── Section Coverage ───────────────────────────────────── */}
       <section className="rounded-xl border border-border bg-surface p-4">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-medium">story health</h2>
-          <span className="text-xs text-text-secondary">
-            {occupiedSlotCount} / {totalSlots} slots occupied
-          </span>
+          <h2 className="font-display text-sm font-medium">site sections</h2>
+          <a href="/admin/story" className="text-[10px] text-text-secondary hover:text-text-primary">
+            manage sections
+          </a>
         </div>
         <div className="mt-3 space-y-1.5">
-          {storyHealth.map((sh) => (
-            <div key={sh.scene.slug} className="flex items-center gap-2 text-xs">
-              <span className={`shrink-0 ${sh.scene.slots.length === 0 ? "text-text-secondary" : sh.emptyCount === 0 && sh.conflictCount === 0 ? "text-deep-sage" : "text-warm-red"}`}>
-                {sh.scene.slots.length === 0 ? "✓" : sh.emptyCount === 0 && sh.conflictCount === 0 ? "✓" : "⚠"}
+          {sectionCounts.map((s) => (
+            <div key={s.category} className="flex items-center gap-2 text-xs">
+              <span className={`shrink-0 ${s.count > 0 ? "text-cocoa" : "text-text-secondary"}`}>
+                {s.count > 0 ? "✓" : "○"}
               </span>
-              <span className="font-medium capitalize">{sh.scene.title}</span>
+              <span className="font-medium capitalize">{s.label}</span>
               <span className="text-text-secondary">
-                {sh.scene.slots.length === 0
-                  ? "configured"
-                  : `${sh.assignedCount} / ${sh.scene.slots.length} memories`}
+                {s.count} photo{s.count !== 1 ? "s" : ""} · {s.slots} slot{s.slots !== 1 ? "s" : ""}
               </span>
-              {sh.conflictCount > 0 && (
-                <span className="text-warm-red">· {sh.conflictCount} conflict{sh.conflictCount > 1 ? "s" : ""}</span>
-              )}
             </div>
           ))}
         </div>
@@ -121,7 +85,7 @@ export default async function AdminDashboard() {
         {/* ── Recent Memories ────────────────────────────────────── */}
         <section className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-medium">recent memories</h2>
+            <h2 className="font-display text-sm font-medium">recent memories</h2>
             <a href="/admin/memories" className="text-[10px] text-text-secondary hover:text-text-primary">
               view all
             </a>
@@ -136,10 +100,10 @@ export default async function AdminDashboard() {
                 href={`/admin/memories?edit=${String(m._id)}`}
                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-surface-muted/50"
               >
-                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${m.visibility === "public" ? "bg-deep-sage" : "bg-text-secondary/40"}`} />
+                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${m.visibility === "public" ? "bg-cocoa" : "bg-text-secondary/40"}`} />
                 <span className="truncate text-xs font-medium">{m.title || "(untitled)"}</span>
                 <span className="ml-auto shrink-0 text-[10px] text-text-secondary">
-                  {m.mediaType === "video" ? "vid" : "img"}
+                  {m.category || "everyday"}
                 </span>
               </a>
             ))}
@@ -149,7 +113,7 @@ export default async function AdminDashboard() {
         {/* ── Orphan Warning + Quick Actions ────────────────────── */}
         <div className="space-y-4">
           <section className="rounded-xl border border-border bg-surface p-4">
-            <h2 className="text-sm font-medium">media cleanup</h2>
+            <h2 className="font-display text-sm font-medium">media cleanup</h2>
             {orphanCount === 0 ? (
               <p className="mt-2 text-xs text-text-secondary">no orphan assets</p>
             ) : (
@@ -168,7 +132,7 @@ export default async function AdminDashboard() {
           </section>
 
           <section className="rounded-xl border border-border bg-surface p-4">
-            <h2 className="text-sm font-medium">quick actions</h2>
+            <h2 className="font-display text-sm font-medium">quick actions</h2>
             <div className="mt-2 flex flex-wrap gap-2">
               {[
                 { label: "Add Memory", href: "/admin/memories?upload=true" },

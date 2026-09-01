@@ -69,13 +69,9 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
     title: string;
     caption: string;
     date: string;
-    location: string;
     category: string;
     visibility: "public" | "hidden";
     featured: boolean;
-    addToStory: boolean;
-    sceneSlug: string;
-    slotId: string;
     displayMode: string;
   }) {
     if (!file || busy) return;
@@ -147,8 +143,6 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
       if (!assetRes.ok) throw new Error("could not save the uploaded file");
 
       // 4. Create memory
-      const sceneId = metadata.addToStory ? metadata.sceneSlug : null;
-      const slotId = metadata.addToStory ? metadata.slotId : null;
       const memoryRes = await fetch("/api/admin/memories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -158,13 +152,10 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
           mediaType,
           publicId: cloudinaryResult.public_id,
           date: metadata.date ? new Date(metadata.date).toISOString() : null,
-          location: metadata.location,
           category: metadata.category,
-          sceneId,
-          slotId,
           featured: metadata.featured,
           visibility: metadata.visibility,
-          displayMode: metadata.addToStory ? metadata.displayMode : "inline",
+          displayMode: metadata.displayMode,
         }),
       });
       if (!memoryRes.ok) {
@@ -206,14 +197,14 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
       )}
 
       {phase === "success" && (
-        <p className="text-center text-sm text-deep-sage">uploaded ✓</p>
+        <p className="text-center text-sm text-cocoa">uploaded ✓</p>
       )}
 
       {errorMsg && (
-        <div className="flex items-start gap-2 rounded-lg bg-warm-red/10 px-3 py-2">
-          <p className="flex-1 text-xs text-warm-red">{errorMsg}</p>
+        <div className="flex items-start gap-2 rounded-lg bg-rose/10 px-3 py-2">
+          <p className="flex-1 text-xs text-rose">{errorMsg}</p>
           {phase === "error" && (
-            <button onClick={handleRetry} className="shrink-0 text-xs font-medium text-warm-red underline">
+            <button onClick={handleRetry} className="shrink-0 text-xs font-medium text-rose underline">
               retry
             </button>
           )}
@@ -226,7 +217,7 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
 
       <div className="flex justify-end gap-2">
         {phase === "uploading" && (
-          <button onClick={handleCancel} className="rounded-full px-3 py-1.5 text-xs text-text-secondary hover:text-warm-red">
+          <button onClick={handleCancel} className="rounded-full px-3 py-1.5 text-xs text-text-secondary hover:text-rose">
             cancel upload
           </button>
         )}

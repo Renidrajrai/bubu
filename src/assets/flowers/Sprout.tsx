@@ -1,8 +1,8 @@
 // Stem + leaves — used for small plants and background filler.
 export default function Sprout({
   height = 60,
-  color = "var(--sage)",
-  leafColor = "var(--blush-2)",
+  color = "var(--stem-green)",
+  leafColor = "var(--leaf-green)",
   flip = false,
   className = "",
 }: {

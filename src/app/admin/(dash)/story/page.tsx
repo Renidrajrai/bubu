@@ -1,39 +1,34 @@
-import StoryTimeline from "@/components/admin/story/StoryTimeline";
+import StorySections from "@/components/admin/story/StorySections";
 import { connectDB } from "@/lib/mongodb";
 import { Memory } from "@/models/Memory";
-import { Scene } from "@/models/Scene";
-import { STORY_SCENES } from "@/config/scenes";
+import { ZINE_SECTIONS } from "@/config/sections";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminStoryPage() {
   await connectDB();
 
-  const [storyMemories, dbScenes] = await Promise.all([
-    Memory.find({ placement: "story" })
-      .select("title thumbnailUrl mediaType sceneId slotId visibility featured")
-      .lean(),
-    Scene.find().lean(),
-  ]);
-
-  // Build slot map: slotId → memory
-  const slotMap = new Map<string, (typeof storyMemories)[number]>();
-  for (const m of storyMemories) {
-    if (m.slotId && !slotMap.has(m.slotId)) {
-      slotMap.set(m.slotId, m);
-    }
-  }
-
-  // Build scene enabled map
-  const sceneEnabled = new Map(dbScenes.map((s) => [s.slug, s.enabled]));
+  const memories = await Memory.find({})
+    .select("title thumbnailUrl mediaType category slot visibility date featured")
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
-    <StoryTimeline
-      scenes={STORY_SCENES}
-      slotMap={Object.fromEntries(
-        Array.from(slotMap.entries()).map(([k, v]) => [k, { ...v, _id: String(v._id) }]),
-      )}
-      sceneEnabled={Object.fromEntries(sceneEnabled)}
+    <StorySections
+      sections={ZINE_SECTIONS.map((s) => {
+        const items: (typeof memories)[number][] = [];
+        for (const m of memories) {
+          if (
+            m.category === s.category &&
+            typeof m.slot === "number" &&
+            m.slot >= 0 &&
+            m.slot < s.slots
+          ) {
+            items[m.slot] = m;
+          }
+        }
+        return { ...s, memories: items };
+      })}
     />
   );
 }

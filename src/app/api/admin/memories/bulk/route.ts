@@ -9,7 +9,6 @@ type BulkAction =
   | { action: "setVisibility"; visibility: "public" | "hidden" }
   | { action: "setFeatured"; featured: boolean }
   | { action: "setPlacement"; placement: "story" | "archive" }
-  | { action: "removeFromStory" }
   | { action: "delete" };
 
 export async function POST(request: Request) {
@@ -40,10 +39,6 @@ export async function POST(request: Request) {
       }
       case "setPlacement": {
         await Memory.updateMany(filter, { placement: rest.placement });
-        break;
-      }
-      case "removeFromStory": {
-        await Memory.updateMany(filter, { sceneId: null, slotId: null, placement: "archive" });
         break;
       }
       case "delete": {

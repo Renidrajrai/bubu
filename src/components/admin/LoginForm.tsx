@@ -52,11 +52,11 @@ export default function LoginForm() {
         required
         className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-text-secondary"
       />
-      {error && <p className="text-xs text-warm-red">{error}</p>}
+      {error && <p className="text-xs text-rose">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="rounded-full bg-deep-sage px-4 py-2 text-sm font-medium text-cream disabled:opacity-50"
+        className="rounded-full bg-cocoa px-4 py-2 text-sm font-medium text-cream disabled:opacity-50"
       >
         {loading ? "checking…" : "come in"}
       </button>

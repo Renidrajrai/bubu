@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
-import { Caveat, DM_Sans, Fraunces } from "next/font/google";
+import {
+  Bebas_Neue,
+  Bricolage_Grotesque,
+  Caveat,
+  DM_Mono,
+  DM_Sans,
+  Fraunces,
+  Space_Grotesk,
+} from "next/font/google";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -11,25 +19,50 @@ const dmSans = DM_Sans({
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
 });
 
 const caveat = Caveat({
   variable: "--font-caveat",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const bebas = Bebas_Neue({
+  variable: "--font-bebas",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
   weight: ["600", "700"],
 });
 
+const dmMono = DM_Mono({
+  variable: "--font-dm-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "bubu & dudu",
-  description: "every little moment — a private scrapbook for him.",
+  title: "PATTU — Visual Archive",
+  description: "a very serious archive of one very pretty boy.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${fraunces.variable} ${caveat.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${fraunces.variable} ${caveat.variable} ${bebas.variable} ${bricolage.variable} ${dmMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -2,7 +2,7 @@
 export default function Bud({
   size = 20,
   color = "var(--blush)",
-  stemColor = "var(--sage)",
+  stemColor = "var(--stem-green)",
   className = "",
 }: {
   size?: number;

@@ -157,7 +157,7 @@ export default function AdminSidebar() {
       {/* Mobile drawer overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/30" onClick={closeMobile} />
+          <div className="absolute inset-0 bg-chocolate/30" onClick={closeMobile} />
           <aside className="absolute inset-y-0 left-0 z-50 w-64 bg-surface shadow-[var(--shadow-lift)]">
             <div className="flex items-center justify-between px-4 py-4">
               <span className="font-display text-base font-medium text-text-primary">bubu admin</span>

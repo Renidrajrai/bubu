@@ -70,7 +70,7 @@ export async function GET(request: Request) {
 
     const [items, total] = await Promise.all([
       Memory.find(filter)
-        .select("title thumbnailUrl mediaType visibility sceneId slotId placement featured category date createdAt")
+        .select("title thumbnailUrl mediaType visibility sceneId slotId placement featured category slot date createdAt")
         .sort(sortSpec)
         .skip(skip)
         .limit(limit)
@@ -117,11 +117,8 @@ export async function POST(request: Request) {
       cloudinaryUrl: asset.url,
       thumbnailUrl: asset.thumbnailUrl,
       date: input.date ? new Date(input.date) : undefined,
-      location: input.location,
       category: input.category,
-      sceneId: input.sceneId,
-      slotId: input.sceneId ? input.slotId : null,
-      placement: input.sceneId ? "story" : input.placement,
+      placement: input.placement,
       featured: input.featured,
       visibility: input.visibility,
       objectPosition: input.objectPosition,

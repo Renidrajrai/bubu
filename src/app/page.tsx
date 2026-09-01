@@ -1,7 +1,5 @@
-import { getPublicStory } from "@/lib/story-data";
-import StoryPage from "@/components/story/StoryPage";
+import ZinePage from "@/components/zine/ZinePage";
 
-export default async function Home() {
-  const story = await getPublicStory();
-  return <StoryPage story={story} />;
+export default function Home() {
+  return <ZinePage />;
 }

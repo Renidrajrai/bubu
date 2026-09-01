@@ -45,9 +45,9 @@ export default function MediaLibrary({ initialAssets, usedPublicIds }: Props) {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-medium">media library</h1>
+        <h1 className="font-display text-lg font-medium">media library</h1>
         {orphanCount > 0 && (
-          <span className="rounded-full bg-warm-red/10 px-2.5 py-1 text-[10px] text-warm-red">
+          <span className="rounded-full bg-rose/10 px-2.5 py-1 text-[10px] text-rose">
             {orphanCount} orphan{orphanCount > 1 ? "s" : ""}
           </span>
         )}
@@ -70,7 +70,7 @@ export default function MediaLibrary({ initialAssets, usedPublicIds }: Props) {
             onClick={() => setFilter(f)}
             className={`rounded-full px-2.5 py-1 text-[10px] transition-colors ${
               filter === f
-                ? "bg-deep-sage text-cream"
+                ? "bg-cocoa text-cream"
                 : "bg-surface-muted text-text-secondary hover:text-text-primary"
             }`}
           >
@@ -102,7 +102,7 @@ export default function MediaLibrary({ initialAssets, usedPublicIds }: Props) {
                   {a.mediaType}
                 </span>
                 {a.isOrphan && (
-                  <span className="absolute right-1.5 top-1.5 rounded-full bg-warm-red px-2 py-0.5 text-[10px] text-white">
+                  <span className="absolute right-1.5 top-1.5 rounded-full bg-rose px-2 py-0.5 text-[10px] text-white">
                     orphan
                   </span>
                 )}

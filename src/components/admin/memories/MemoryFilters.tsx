@@ -1,14 +1,12 @@
 "use client";
 
-import { CATEGORIES, STORY_SCENES } from "@/config/scenes";
+import { CATEGORIES } from "@/config/scenes";
 
 type FilterState = {
   search: string;
   visibility: string;
-  placement: string;
   mediaType: string;
   category: string;
-  sceneId: string;
   featured: string;
   sort: string;
 };
@@ -47,16 +45,6 @@ export default function MemoryFilters({ filters, onChange }: Props) {
         </select>
 
         <select
-          value={filters.placement}
-          onChange={(e) => update({ placement: e.target.value })}
-          className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-text-primary outline-none"
-        >
-          <option value="all">all placement</option>
-          <option value="story">in story</option>
-          <option value="archive">archive only</option>
-        </select>
-
-        <select
           value={filters.mediaType}
           onChange={(e) => update({ mediaType: e.target.value })}
           className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-text-primary outline-none"
@@ -74,17 +62,6 @@ export default function MemoryFilters({ filters, onChange }: Props) {
           <option value="">all categories</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-
-        <select
-          value={filters.sceneId}
-          onChange={(e) => update({ sceneId: e.target.value })}
-          className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-text-primary outline-none"
-        >
-          <option value="">all scenes</option>
-          {STORY_SCENES.map((s) => (
-            <option key={s.slug} value={s.slug}>{s.title}</option>
           ))}
         </select>
 
@@ -108,7 +85,6 @@ export default function MemoryFilters({ filters, onChange }: Props) {
             <option value="oldest">oldest</option>
             <option value="title-asc">title A–Z</option>
             <option value="title-desc">title Z–A</option>
-            <option value="story-order">story order</option>
             <option value="date-taken">date taken</option>
             <option value="recently-updated">recently updated</option>
           </select>

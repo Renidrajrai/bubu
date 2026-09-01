@@ -13,6 +13,7 @@ const memorySchema = new Schema(
     category: { type: String, default: "everyday" },
     sceneId: { type: String, default: null },
     slotId: { type: String, default: null },
+    slot: { type: Number, default: null },
     order: { type: Number, default: 0 },
     featured: { type: Boolean, default: false },
     visibility: { type: String, enum: ["public", "hidden"], default: "public" },

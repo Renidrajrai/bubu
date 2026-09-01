@@ -6,6 +6,7 @@ export { default as Petal } from "./Petal";
 export { default as PetalRing } from "./PetalRing";
 export { default as FlowerCenter } from "./FlowerCenter";
 export { default as FlowerHead } from "./FlowerHead";
+export { default as YellowFlower } from "./YellowFlower";
 export { default as DandelionHead } from "./DandelionHead";
 export { default as Seed } from "./Seed";
 export { default as Sprout } from "./Sprout";

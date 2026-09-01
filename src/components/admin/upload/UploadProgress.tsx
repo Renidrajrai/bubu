@@ -5,7 +5,7 @@ export default function UploadProgress({ progress }: { progress: number }) {
     <div>
       <div className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
         <div
-          className="h-full rounded-full bg-deep-sage transition-all"
+          className="h-full rounded-full bg-cocoa transition-all"
           style={{ width: `${progress}%` }}
         />
       </div>

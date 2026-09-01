@@ -23,7 +23,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
     const update: Record<string, unknown> = {};
     for (const key of [
-      "title", "caption", "location", "category", "featured",
+      "title", "caption", "category", "featured",
       "objectPosition", "displayMode",
     ] as const) {
       if (input[key] !== undefined) update[key] = input[key];
@@ -31,13 +31,13 @@ export async function PATCH(request: Request, { params }: Params) {
     if (input.date !== undefined) update.date = input.date ? new Date(input.date) : null;
     if (input.visibility !== undefined) update.visibility = input.visibility;
     if (input.placement !== undefined) update.placement = input.placement;
-    if (input.sceneId !== undefined) {
-      update.sceneId = input.sceneId;
-      update.slotId = input.slotId ?? null;
-      // auto-set placement based on scene assignment
-      update.placement = input.sceneId ? "story" : "archive";
-    } else if (input.slotId !== undefined) {
-      update.slotId = input.slotId;
+    if (input.slot !== undefined) update.slot = input.slot;
+
+    if (input.category !== undefined && input.slot != null) {
+      await Memory.updateMany(
+        { _id: { $ne: id }, category: input.category, slot: input.slot },
+        { $set: { slot: null } }
+      );
     }
 
     const memory = await Memory.findByIdAndUpdate(id, update, { returnDocument: "after" });

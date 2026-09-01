@@ -2,7 +2,7 @@
 export default function Stem({
   height = 80,
   curve = 0,
-  color = "var(--sage)",
+  color = "var(--stem-green)",
   strokeWidth = 3,
   className = "",
 }: {

@@ -43,9 +43,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               onClick={() => dismiss(t.id)}
               className={`pointer-events-auto rounded-lg px-3 py-2 text-xs shadow-[var(--shadow-soft)] transition-opacity hover:opacity-80 ${
                 t.type === "error"
-                  ? "bg-warm-red text-cream"
+                  ? "bg-rose text-cream"
                   : t.type === "success"
-                    ? "bg-deep-sage text-cream"
+                    ? "bg-cocoa text-cream"
                     : "bg-surface text-text-primary border border-border"
               }`}
             >

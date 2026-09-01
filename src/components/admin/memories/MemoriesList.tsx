@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AdminMemory, PaginatedResponse } from "@/types/admin";
+import UploadMemory from "../UploadMemory";
 import MemoryFilters from "./MemoryFilters";
 import MemoryBulkActions from "./MemoryBulkActions";
 import MemoryEditor from "../MemoryEditor";
@@ -11,10 +12,8 @@ import DeleteMemoryDialog from "./DeleteMemoryDialog";
 type FilterState = {
   search: string;
   visibility: string;
-  placement: string;
   mediaType: string;
   category: string;
-  sceneId: string;
   featured: string;
   sort: string;
 };
@@ -35,10 +34,8 @@ export default function MemoriesList() {
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     visibility: "all",
-    placement: "all",
     mediaType: "all",
     category: "",
-    sceneId: "",
     featured: "",
     sort: "newest",
   });
@@ -47,6 +44,7 @@ export default function MemoriesList() {
   const [data, setData] = useState<PaginatedResponse<AdminMemory> | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showUpload, setShowUpload] = useState(false);
   const [editing, setEditing] = useState<AdminMemory | null>(null);
   const [deleting, setDeleting] = useState<AdminMemory | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -56,10 +54,8 @@ export default function MemoriesList() {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set("search", debouncedSearch);
     if (filters.visibility !== "all") params.set("visibility", filters.visibility);
-    if (filters.placement !== "all") params.set("placement", filters.placement);
     if (filters.mediaType !== "all") params.set("mediaType", filters.mediaType);
     if (filters.category) params.set("category", filters.category);
-    if (filters.sceneId) params.set("sceneId", filters.sceneId);
     if (filters.featured) params.set("featured", filters.featured);
     params.set("sort", filters.sort);
     params.set("page", String(page));
@@ -79,7 +75,7 @@ export default function MemoriesList() {
   // Sync upload=true from URL
   useEffect(() => {
     if (searchParams.get("upload") === "true") {
-      // could trigger upload dialog — for now just clean the URL
+      setShowUpload(true);
       router.replace("/admin/memories");
     }
   }, [searchParams, router]);
@@ -130,14 +126,23 @@ export default function MemoriesList() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-medium">memories</h1>
-        <a
-          href="/admin/memories?upload=true"
-          className="rounded-full bg-deep-sage px-4 py-2 text-sm font-medium text-cream transition-opacity hover:opacity-90"
+        <h1 className="font-display text-lg font-medium">memories</h1>
+        <button
+          onClick={() => setShowUpload((v) => !v)}
+          className="rounded-full bg-cocoa px-4 py-2 text-sm font-medium text-cream transition-opacity hover:opacity-90"
         >
-          + add memory
-        </a>
+          {showUpload ? "close" : "+ add memory"}
+        </button>
       </div>
+
+      {showUpload && (
+        <UploadMemory
+          onDone={() => {
+            setShowUpload(false);
+            fetchMemories();
+          }}
+        />
+      )}
 
       <MemoryFilters filters={filters} onChange={(f) => { setFilters(f); setPage(1); }} />
 
@@ -156,7 +161,7 @@ export default function MemoriesList() {
       ) : !data || data.items.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface px-4 py-12 text-center">
           <p className="text-sm text-text-secondary">no memories found</p>
-          <a href="/admin/memories?upload=true" className="mt-2 inline-block text-xs text-deep-sage hover:underline">
+          <a href="/admin/memories?upload=true" className="mt-2 inline-block text-xs text-cocoa hover:underline">
             + add your first memory
           </a>
         </div>
@@ -178,7 +183,7 @@ export default function MemoriesList() {
                   <th className="px-3 py-2" />
                   <th className="px-3 py-2">title</th>
                   <th className="px-3 py-2">type</th>
-                  <th className="px-3 py-2">scene</th>
+                  <th className="px-3 py-2">category</th>
                   <th className="px-3 py-2">date</th>
                   <th className="px-3 py-2">status</th>
                   <th className="w-20 px-3 py-2" />
@@ -206,7 +211,7 @@ export default function MemoriesList() {
                     <td className="max-w-[200px] truncate px-3 py-2 font-medium">{m.title || "(untitled)"}</td>
                     <td className="px-3 py-2 text-text-secondary">{m.mediaType}</td>
                     <td className="max-w-[120px] truncate px-3 py-2 text-text-secondary">
-                      {m.sceneId || "—"}
+                      {m.category || "—"}
                     </td>
                     <td className="px-3 py-2 text-text-secondary">
                       {m.date ? new Date(m.date).toLocaleDateString() : "—"}
@@ -214,19 +219,19 @@ export default function MemoriesList() {
                     <td className="px-3 py-2">
                       <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] ${
                         m.visibility === "public"
-                          ? "bg-deep-sage/10 text-deep-sage"
+                          ? "bg-cocoa/10 text-cocoa"
                           : "bg-surface-muted text-text-secondary"
                       }`}>
                         {m.visibility}
                       </span>
-                      {m.featured && <span className="ml-1 text-[10px] text-warm-red">★</span>}
+                      {m.featured && <span className="ml-1 text-[10px] text-rose">★</span>}
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex gap-1">
                         <button onClick={() => setEditing(m)} className="rounded px-1.5 py-0.5 text-text-secondary hover:text-text-primary">
                           edit
                         </button>
-                        <button onClick={() => setDeleting(m)} className="rounded px-1.5 py-0.5 text-text-secondary hover:text-warm-red">
+                        <button onClick={() => setDeleting(m)} className="rounded px-1.5 py-0.5 text-text-secondary hover:text-rose">
                           del
                         </button>
                       </div>
@@ -256,12 +261,12 @@ export default function MemoriesList() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{m.title || "(untitled)"}</p>
                   <p className="truncate text-[10px] text-text-secondary">
-                    {m.mediaType} · {m.sceneId || "archive"}
+                    {m.mediaType} · {m.category || "everyday"}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <button onClick={() => setEditing(m)} className="rounded px-1.5 py-0.5 text-xs text-text-secondary hover:text-text-primary">edit</button>
-                  <button onClick={() => setDeleting(m)} className="rounded px-1.5 py-0.5 text-xs text-text-secondary hover:text-warm-red">del</button>
+                  <button onClick={() => setDeleting(m)} className="rounded px-1.5 py-0.5 text-xs text-text-secondary hover:text-rose">del</button>
                 </div>
               </div>
             ))}
