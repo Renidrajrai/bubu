@@ -113,7 +113,7 @@
 ```
 MONGODB_URI=mongodb+srv://.../pattu-memories        # Atlas cluster
 CLOUDINARY_CLOUD_NAME=dn3nu928
-CLOUDINARY_API_KEY=374714139694341
+CLOUDINARY_API_KEY=<redacted — was committed, rotated>
 CLOUDINARY_API_SECRET=...
 AUTH_SECRET=<32-byte hex>
 ADMIN_USERNAME=admin
