@@ -22,7 +22,6 @@ export default async function AdminMediaPage() {
   return (
     <MediaLibrary
       initialAssets={assetsWithOrphan}
-      usedPublicIds={Array.from(usedPublicIds)}
     />
   );
 }

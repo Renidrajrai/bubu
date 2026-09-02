@@ -74,14 +74,13 @@
 ### Archive (rebuilt)
 - `ArchiveOverlay.tsx` — garden metaphor, masonry layout, filter chips, botanical accents.
 
-> Build note: this Next version (16.3.2) deprecates `middleware` in favor of `proxy`
-> (build warning seen Phase 5; still works — migrate when touching auth next).
-> `<Image priority>` is deprecated → use `preload`.
+> Build note: this Next version (16.3.2) deprecates `middleware` in favor of `proxy`.
+> Migrated to `src/proxy.ts` (Phase noted, done). `<Image priority>` is deprecated → use `preload`.
 
 ### Stack (installed & working)
 - Next.js 16.3.2, React 19.2.8, TypeScript strict, ESLint 9, Tailwind v4 (CSS-first)
 - motion 13.1.1 (`import { ... } from "motion/react"`), mongoose 9, cloudinary 2,
-  next-cloudinary 6 (installed, unused yet), jose 6, bcryptjs 3, zod 4, tsx (dev)
+  jose 6, bcryptjs 3, zod 4, tsx (dev)
 - Node v22 on machine. Project lives OUTSIDE OneDrive on purpose.
 
 ### What exists
@@ -94,9 +93,9 @@
 | Cloudinary lib | `src/lib/cloudinary.ts` | LAZY config inside `requireCloudinaryEnv()` (module-scope config broke scripts); folders `boyfriend-site/images|videos`; `createSignedUploadParams(mediaType)` single source of truth |
 | Asset persist | `src/lib/media.ts` | `saveMediaAsset()` verifies asset via Admin API then upserts MediaAsset w/ thumbnail |
 | Validation | `src/lib/validations.ts`, `src/lib/memorySchemas.ts` | zod schemas for sign/save/create/update |
-| Auth | `src/lib/auth.ts` + `src/middleware.ts` | jose JWT in httpOnly cookie `pattu_session`; middleware guards `/admin/:path*` and `/api/admin/:path*` |
+| Auth | `src/lib/auth.ts` + `src/proxy.ts` | jose JWT in httpOnly cookie `pattu_session`; proxy guards `/admin/:path*` and `/api/admin/:path*`; admin password hash lives in the DB (fallback to `ADMIN_PASSWORD_HASH_HEX` env on first boot) |
 | Auth routes | `src/app/api/auth/login|logout/route.ts` | login has in-memory rate limit (8 / 5 min) |
-| Upload routes | `src/app/api/upload/sign/route.ts`, `src/app/api/upload/route.ts` | server dictates folder+formats; client uploads DIRECTLY to Cloudinary |
+| Upload routes | `src/app/api/upload/sign/route.ts`, `src/app/api/upload/route.ts` | server dictates folder+formats; client uploads DIRECTLY to Cloudinary; both routes now require admin auth |
 | Admin APIs | `src/app/api/admin/memories[/id]/route.ts`, `.../meta/route.ts` | full CRUD; DELETE destroys Cloudinary source too |
 | Slot registry | `src/config/scenes.ts` | STORY_SCENES: 6 scenes × slots w/ ids + aspectRatio; also DISPLAY_MODES, CATEGORIES |
 | Admin UI | `src/app/admin/login/page.tsx`, `src/app/admin/(dash)/{layout,page}.tsx`, `(dash)/scenes/page.tsx`, `(dash)/media/page.tsx` | memories dashboard + upload panel + edit modal; scenes page shows aspect-correct slot previews; media page flags orphans |
@@ -118,7 +117,8 @@ CLOUDINARY_API_KEY=374714139694341
 CLOUDINARY_API_SECRET=...
 AUTH_SECRET=<32-byte hex>
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD_HASH_HEX=<hex-encoded bcrypt of "changeme">
+ADMIN_PASSWORD_HASH_HEX=<hex-encoded bcrypt of fallback seed; active hash stored in DB, editable at /admin/settings>
+ADMIN_PASSWORD=<optional; `npm run set-admin-password` bootstraps this into the DB>
 ```
 
 ### Hard-won gotchas (do not relearn these)
@@ -128,7 +128,7 @@ ADMIN_PASSWORD_HASH_HEX=<hex-encoded bcrypt of "changeme">
 4. Turbopack root warning fixed via `turbopack.root` in `next.config.ts` (stray package-lock.json in C:\Users\ASUS).
 5. Admin pages needing auth live under route group `src/app/admin/(dash)/` so `/admin/login` gets no nav chrome.
 6. Mongoose 9: use `returnDocument: "after"`, not `new: true`.
-7. Login credentials: username `admin`, password `changeme` (placeholder — change later).
+7. Admin login: username `admin`, password stored in the DB (bootstrap via `npm run set-admin-password`, or change from Settings → change password). No longer a documented public default.
 8. Seeded photos are picsum.photos placeholders; the video seed uses Cloudinary's public demo dog.mp4.
 
 ### Git

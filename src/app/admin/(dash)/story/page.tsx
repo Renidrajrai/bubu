@@ -11,7 +11,13 @@ export default async function AdminStoryPage() {
   const memories = await Memory.find({})
     .select("title thumbnailUrl mediaType category slot visibility date featured")
     .sort({ createdAt: -1 })
-    .lean();
+    .lean()
+    .then((docs) =>
+      docs.map((m) => ({
+        ...m,
+        _id: m._id.toString(),
+      })),
+    );
 
   return (
     <StorySections

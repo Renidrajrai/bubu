@@ -44,7 +44,9 @@ export default function MemoriesList() {
   const [data, setData] = useState<PaginatedResponse<AdminMemory> | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [showUpload, setShowUpload] = useState(false);
+  const [showUpload, setShowUpload] = useState(
+    () => searchParams.get("upload") === "true",
+  );
   const [editing, setEditing] = useState<AdminMemory | null>(null);
   const [deleting, setDeleting] = useState<AdminMemory | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -59,7 +61,7 @@ export default function MemoriesList() {
     if (filters.featured) params.set("featured", filters.featured);
     params.set("sort", filters.sort);
     params.set("page", String(page));
-    params.set("limit", "25");
+    params.set("limit", "100");
 
     const res = await fetch(`/api/admin/memories?${params}`);
     if (res.ok) {
@@ -69,13 +71,13 @@ export default function MemoriesList() {
   }, [debouncedSearch, filters, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount: loading starts true, state updates in the async continuation
     fetchMemories();
   }, [fetchMemories]);
 
-  // Sync upload=true from URL
+  // Clean the ?upload=true param once it's been read into state
   useEffect(() => {
     if (searchParams.get("upload") === "true") {
-      setShowUpload(true);
       router.replace("/admin/memories");
     }
   }, [searchParams, router]);
@@ -103,21 +105,23 @@ export default function MemoriesList() {
       setBulkDeleting(true);
       return;
     }
-    await fetch("/api/admin/memories/bulk", {
+    const res = await fetch("/api/admin/memories/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ids: Array.from(selected), action, ...payload }),
     });
+    if (!res.ok) return;
     setSelected(new Set());
     fetchMemories();
   }
 
   async function confirmBulkDelete() {
-    await fetch("/api/admin/memories/bulk", {
+    const res = await fetch("/api/admin/memories/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ids: Array.from(selected), action: "delete" }),
     });
+    if (!res.ok) return;
     setSelected(new Set());
     setBulkDeleting(false);
     fetchMemories();
@@ -309,7 +313,8 @@ export default function MemoriesList() {
         <DeleteMemoryDialog
           memory={deleting}
           onConfirm={async () => {
-            await fetch(`/api/admin/memories/${deleting._id}`, { method: "DELETE" });
+            const res = await fetch(`/api/admin/memories/${deleting._id}`, { method: "DELETE" });
+            if (!res.ok) return;
             setDeleting(null);
             fetchMemories();
           }}

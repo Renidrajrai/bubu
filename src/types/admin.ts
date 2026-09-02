@@ -39,10 +39,6 @@ export type AdminMediaAsset = {
 
 // ── API Responses ───────────────────────────────────────────────────
 
-export type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error: { code: string; message: string } };
-
 export type PaginatedResponse<T> = {
   items: T[];
   pagination: {
@@ -53,11 +49,7 @@ export type PaginatedResponse<T> = {
   };
 };
 
-// ── Filters & Sorting ───────────────────────────────────────────────
-
-export type MemoryVisibility = "public" | "hidden";
-export type MemoryPlacement = "story" | "archive";
-export type MediaType = "image" | "video";
+// ── Sorting ─────────────────────────────────────────────────────────
 
 export type MemorySortOption =
   | "newest"
@@ -67,16 +59,3 @@ export type MemorySortOption =
   | "story-order"
   | "date-taken"
   | "recently-updated";
-
-export type MemoryFilters = {
-  search?: string;
-  visibility?: MemoryVisibility | "all";
-  placement?: MemoryPlacement | "all";
-  mediaType?: MediaType | "all";
-  category?: string;
-  sceneId?: string;
-  featured?: boolean;
-  sort?: MemorySortOption;
-  page?: number;
-  limit?: number;
-};

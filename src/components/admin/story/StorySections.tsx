@@ -150,11 +150,12 @@ export default function StorySections({
               </button>
               <button
                 onClick={async () => {
-                  await fetch(`/api/admin/memories/${removing.memory._id}`, {
+                  const res = await fetch(`/api/admin/memories/${removing.memory._id}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ slot: null }),
                   });
+                  if (!res.ok) return;
                   setRemoving(null);
                   refresh();
                 }}

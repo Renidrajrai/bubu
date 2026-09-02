@@ -32,7 +32,15 @@ export async function PUT(request: Request) {
     const allowed = ["siteTitle", "introText", "archiveEnabled", "storyEnabled", "defaultDisplayMode", "defaultObjectPosition"];
     const update: Record<string, unknown> = {};
     for (const key of allowed) {
-      if (body[key] !== undefined) update[key] = body[key];
+      const val = body[key];
+      if (val === undefined) continue;
+      if (key === "archiveEnabled" || key === "storyEnabled") {
+        update[key] = val === true || val === "true";
+      } else if (typeof val === "string") {
+        update[key] = key === "introText" || key === "siteTitle" ? val.trim() : val;
+      } else {
+        update[key] = val;
+      }
     }
 
     const settings = await Settings.findOneAndUpdate({}, update, { upsert: true, returnDocument: "after" });

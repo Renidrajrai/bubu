@@ -1,18 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { AdminMediaAsset, AdminMemory } from "@/types/admin";
+import { useCallback, useState } from "react";
+import type { AdminMediaAsset } from "@/types/admin";
 import ConfirmDialog from "../ConfirmDialog";
 import MediaDetail from "./MediaDetail";
 
 type Props = {
   initialAssets: (AdminMediaAsset & { isOrphan: boolean })[];
-  usedPublicIds: string[];
 };
 
 type Filter = "all" | "images" | "videos" | "used" | "orphan";
 
-export default function MediaLibrary({ initialAssets, usedPublicIds }: Props) {
+export default function MediaLibrary({ initialAssets }: Props) {
   const [assets, setAssets] = useState(initialAssets);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
@@ -32,11 +31,12 @@ export default function MediaLibrary({ initialAssets, usedPublicIds }: Props) {
 
   const doDelete = useCallback(async () => {
     if (!deleting) return;
-    await fetch("/api/admin/media", {
+    const res = await fetch("/api/admin/media", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ publicId: deleting.publicId }),
     });
+    if (!res.ok) return;
     setAssets((prev) => prev.filter((a) => a.publicId !== deleting.publicId));
     setDeleting(null);
     setSelected(null);

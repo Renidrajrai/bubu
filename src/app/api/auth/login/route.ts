@@ -1,22 +1,39 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { createSessionToken, SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from "@/lib/auth";
+import {
+  createSessionToken,
+  SESSION_COOKIE,
+  SESSION_COOKIE_OPTIONS,
+  getAdminPasswordHashHex,
+} from "@/lib/auth";
 
-// .env values containing `$` get mangled by Next's env expansion,
-// so the bcrypt hash is stored hex-encoded and decoded here
-function storedHash() {
-  const hex = process.env.ADMIN_PASSWORD_HASH_HEX;
-  return hex ? Buffer.from(hex, "hex").toString("binary") : undefined;
+// .env/DB values containing `$` get mangled by Next's env expansion, so the
+// bcrypt hash is stored hex-encoded and decoded to UTF-8 here.
+async function storedHash() {
+  const hex = await getAdminPasswordHashHex();
+  return hex ? Buffer.from(hex, "hex").toString("utf8") : undefined;
 }
 
 // ponytail: in-memory rate limit — fine for a single-admin site;
-// move to Redis/upstash only if this ever gets deployed multi-instance
+// move to Redis/upstash only if this ever gets deployed multi-instance.
+// IP comes from x-forwarded-for, which a direct client can spoof, so we pair
+// it with a global cap that no spoofing can dodge.
 const attempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 8;
 const WINDOW_MS = 5 * 60 * 1000;
+let globalCount = 0;
+const GLOBAL_CAP = 500;
+const GLOBAL_WINDOW_MS = 60 * 60 * 1000;
+let globalResetAt = Date.now() + GLOBAL_WINDOW_MS;
 
 function tooManyAttempts(ip: string) {
   const now = Date.now();
+  if (now > globalResetAt) {
+    globalResetAt = now + GLOBAL_WINDOW_MS;
+    globalCount = 0;
+  }
+  if (globalCount >= GLOBAL_CAP) return true;
+
   const entry = attempts.get(ip);
   if (!entry || entry.resetAt < now) {
     attempts.set(ip, { count: 0, resetAt: now + WINDOW_MS });
@@ -26,6 +43,7 @@ function tooManyAttempts(ip: string) {
 }
 
 function recordAttempt(ip: string) {
+  globalCount += 1;
   const entry = attempts.get(ip);
   if (entry) entry.count += 1;
 }
@@ -41,7 +59,7 @@ export async function POST(request: Request) {
   const username = typeof body?.username === "string" ? body.username : "";
   const password = typeof body?.password === "string" ? body.password : "";
 
-  const hash = storedHash();
+  const hash = await storedHash();
   if (
     !process.env.ADMIN_USERNAME ||
     !hash ||

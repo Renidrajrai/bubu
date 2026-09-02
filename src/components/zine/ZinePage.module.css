@@ -180,12 +180,6 @@
 }
 
 /* eyes spread — one base photo, small corner collage */
-.ecCollage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 482 / 162;
-  margin: 14px 0 64px;
-}
 .ecLabel {
   display: block;
   margin-top: 24px;
@@ -199,14 +193,19 @@
   border: 1px solid var(--ink);
   width: max-content;
 }
+.ecGrid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: clamp(150px, 19vw, 230px);
+  gap: 14px;
+  margin: 40px auto 8px;
+  width: 100%;
+}
 .ecLabelText {
   position: absolute;
-  left: 9.5%;
-  top: 0;
-  width: 23%;
-  height: 24%;
-  display: flex;
-  align-items: center;
+  top: -30px;
+  left: 0;
   font-family: var(--font-dm-mono), monospace;
   font-size: clamp(10px, 1.15vw, 13px);
   text-transform: uppercase;
@@ -214,55 +213,54 @@
   color: var(--ink);
   z-index: 1;
 }
-.ecImg {
-  position: absolute;
+.ecCell {
+  position: relative;
   overflow: hidden;
   background: var(--white);
-  border: 2px solid var(--paper);
-  box-shadow: 4px 5px 0 rgba(23, 21, 19, 0.16);
+  border: var(--border);
+  box-shadow: var(--shadow);
 }
-.ecImg img {
+.ecCell img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 40%;
   display: block;
 }
-.ecBase {
-  left: 6.64%;
-  top: 21.6%;
-  width: 84.02%;
-  height: 68.52%;
-  border: var(--border);
-  box-shadow: var(--shadow);
-  z-index: 1;
+/* creative mosaic — horizontal eye tiles: a big featured eye framed by
+   supporting landscape photos */
+.ecT1 {
+  grid-column: 1 / 3;
+  grid-row: 1 / 3;
 }
-.ec2 {
-  left: 0%;
-  top: 12.35%;
-  width: 35.68%;
-  height: 22.84%;
-  z-index: 2;
+.ecT2 {
+  grid-column: 3 / 5;
+  grid-row: 1 / 2;
+  transform: rotate(1.2deg);
 }
-.ec3 {
-  left: 70.75%;
-  top: 79.63%;
-  width: 29.25%;
-  height: 20.37%;
-  z-index: 2;
+.ecT3 {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+  transform: translateY(16px) rotate(-1.5deg);
 }
-.ec4 {
-  left: 2.49%;
-  top: 31.48%;
-  width: 15.35%;
-  height: 10.49%;
-  z-index: 4;
+.ecT4 {
+  grid-column: 4 / 5;
+  grid-row: 2 / 3;
+  transform: translateY(16px) rotate(1.2deg);
 }
-.ec5 {
-  left: 79.67%;
-  top: 67.9%;
-  width: 18.46%;
-  height: 15.43%;
-  z-index: 3;
+.ecT5 {
+  grid-column: 1 / 5;
+  grid-row: 3 / 4;
+}
+
+.eyesDeco {
+  position: absolute;
+  right: 6%;
+  top: 8%;
+  width: 30px;
+  height: 30px;
+  z-index: 5;
+  pointer-events: none;
 }
 
 /* emotional quote + love note */
@@ -410,11 +408,30 @@
   transform: translateY(-15px) rotate(0.7deg);
 }
 
+.collageDeco {
+  position: absolute;
+  left: 12%;
+  top: -6px;
+  width: 24px;
+  height: 24px;
+  z-index: 6;
+  pointer-events: none;
+  color: var(--gold);
+}
+.decoSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 /* --------------------------------------------------------------
    DARK POSTER — Pretty Boy Archive
    -------------------------------------------------------------- */
 .poster {
-  background: var(--ink);
+  background-color: var(--ink);
+  background-image: url("../../lib/bubu.jpeg");
+  background-size: cover;
+  background-position: center;
   color: var(--paper);
   margin: 0 calc(var(--pad) * -1);
   padding: 110px var(--pad) 130px;
@@ -636,15 +653,13 @@
   transform: rotate(-2deg);
 }
 .candidCard:nth-child(2) {
-  grid-column: span 2;
-  transform: translateY(60px) rotate(1.4deg);
+  transform: translateY(20px) rotate(1.4deg);
 }
 .candidCard:nth-child(3) {
-  transform: rotate(2.5deg);
+  transform: translateY(40px) rotate(2.5deg);
 }
 .candidCard:nth-child(4) {
-  grid-column: 2/4;
-  transform: translateY(-30px) rotate(-1.6deg);
+  transform: translateY(60px) rotate(-1.6deg);
 }
 
 .candidPhoto {
@@ -952,6 +967,16 @@
   transform: rotate(12deg);
   background: var(--paper);
 }
+.finalDeco {
+  position: absolute;
+  right: 5%;
+  top: 31%;
+  width: 22px;
+  height: 22px;
+  z-index: 5;
+  pointer-events: none;
+  color: var(--gold);
+}
 
 /* envelope lock (password-protected letter) */
 .envelope {
@@ -1156,6 +1181,55 @@
   opacity: 0.75;
 }
 
+/* letter flip — turn the page to read the rest */
+.flipWrap {
+  perspective: 1600px;
+}
+.flipInner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.flipInner.flipOpen {
+  transform: rotateY(180deg);
+}
+.flipFace {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flipBack {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+.flipBtn.flipBackBtn {
+  margin-top: 12px;
+  color: var(--red);
+  background: transparent;
+  border: 1px solid var(--red);
+}
+.flipBtn.flipBackBtn:hover {
+  background: var(--red);
+  color: var(--paper);
+  opacity: 1;
+}
+.flipBtn {
+  margin-top: 8px;
+  padding: 10px 18px;
+  font-family: var(--font-dm-mono), monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.flipBtn:hover {
+  opacity: 0.85;
+}
+
 .zine footer {
   border-top: var(--border);
   margin-top: 25px;
@@ -1253,10 +1327,31 @@
     grid-template-columns: 1fr 0.55fr;
   }
   .heroPhotoMain {
-    height: min(52vh, 460px);
+    height: min(52svh, 460px);
   }
   .eyesPoetic {
     font-size: 20px;
+  }
+  .ecGrid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: clamp(140px, 22vw, 200px);
+    gap: 12px;
+  }
+  .ecT1,
+  .ecT2,
+  .ecT3,
+  .ecT4,
+  .ecT5 {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .ecT1 {
+    grid-column: 1 / 3;
+  }
+  .ecT2,
+  .ecT3,
+  .ecT4 {
+    transform: none;
   }
   .collageA {
     grid-template-columns: 1fr 1fr;
@@ -1292,14 +1387,12 @@
     grid-row: 3/4;
   }
   .candidGrid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .candidCard:nth-child(2) {
-    grid-column: span 2;
     transform: translateY(0) rotate(1deg);
   }
   .candidCard:nth-child(4) {
-    grid-column: 1/3;
     transform: rotate(-1deg);
   }
   .modalGrid {
@@ -1361,6 +1454,14 @@
   .ecLabel {
     font-size: 9px;
   }
+  /* Eyes gallery: drop to 2 columns on phones so each photo stays readable. */
+  .ecGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .ecLabelText {
+    font-size: 9px;
+  }
   .posterMosaic {
     grid-template-columns: 1fr;
     grid-template-rows: none;
@@ -1410,5 +1511,48 @@
   }
   .zine footer {
     flex-direction: column;
+  }
+  .heroSplit {
+    gap: 28px;
+    padding-top: 24px;
+  }
+  .heroTop {
+    gap: 8px;
+  }
+  .spreadHeader {
+    margin-bottom: 40px;
+  }
+  /* Fix 1 — mobile viewport heights: use svh so sections fit the visible
+     phone screen (Safari 100vh bug) and aren't pushed below the fold. */
+  .hero {
+    min-height: 100svh;
+  }
+  .heroPhotoMain {
+    height: min(46svh, 400px);
+  }
+  .spread {
+    min-height: 92svh;
+  }
+  .final {
+    min-height: 100svh;
+  }
+  .finalStage {
+    min-height: 64svh;
+  }
+  /* Fix 2b — drop the full-screen grain (mix-blend-mode) overlay on phones;
+     it's a known Safari jank source and adds nothing on small screens. */
+  .zine:before {
+    display: none;
+  }
+  /* Fix 3 — letter code row fits narrow screens, no horizontal overflow. */
+  .envelope {
+    width: min(480px, 92vw);
+  }
+  .pwRow {
+    flex-direction: column;
+  }
+  .pwRow input {
+    width: 100%;
+    max-width: 230px;
   }
 }

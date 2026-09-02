@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ZineSection } from "@/config/sections";
 
 type Props = {
@@ -31,24 +31,22 @@ export default function AssignSectionDialog({ section, slot, onClose, onDone }: 
     inputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    const t = setTimeout(async () => {
-      setLoading(true);
-      const params = new URLSearchParams({ limit: "50", sort: "newest" });
-      if (search) params.set("search", search);
-      const res = await fetch(`/api/admin/memories?${params}`);
-      if (res.ok && !cancelled) {
-        const data = await res.json();
-        setMemories(data.items);
-      }
-      if (!cancelled) setLoading(false);
-    }, 250);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
+  const load = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams({ limit: "500", mediaType: "image", sort: "newest" });
+    if (search) params.set("search", search);
+    const res = await fetch(`/api/admin/memories?${params}`);
+    if (res.ok) {
+      const data = await res.json();
+      setMemories(data.items);
+    }
+    setLoading(false);
   }, [search]);
+
+  useEffect(() => {
+    const t = setTimeout(load, 250);
+    return () => clearTimeout(t);
+  }, [load]);
 
   async function assign(messy: MemoryHit) {
     setSaving(true);
@@ -59,11 +57,19 @@ export default function AssignSectionDialog({ section, slot, onClose, onDone }: 
       body: JSON.stringify({ category: section.category, slot }),
     });
     setSaving(false);
-    if (res.ok) onDone();
-    else setError("could not assign — try again");
+    if (res.ok) {
+      await load();
+      onDone();
+    } else setError("could not assign — try again");
   }
 
-  const filtered = memories.filter((m) => m.mediaType === "image");
+  const SECTION_CATEGORIES = ["hero", "eyes", "cameraroll", "poster", "candid", "final"];
+
+  const filtered = memories.filter(
+    (m) =>
+      m.mediaType === "image" &&
+      !(m.category && SECTION_CATEGORIES.includes(m.category) && m.slot != null),
+  );
 
   return (
     <div

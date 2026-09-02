@@ -8,6 +8,7 @@ import {
   Fraunces,
   Space_Grotesk,
 } from "next/font/google";
+import { getSiteTitle, DEFAULT_SITE_TITLE } from "@/lib/zine-data";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -53,10 +54,13 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "PATTU — Visual Archive",
-  description: "a very serious archive of one very pretty boy.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const siteTitle = await getSiteTitle();
+  return {
+    title: siteTitle || DEFAULT_SITE_TITLE,
+    description: "a very serious archive of one very pretty boy.",
+  };
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

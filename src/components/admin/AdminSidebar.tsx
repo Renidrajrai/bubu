@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ADMIN_NAV, type AdminNavItem } from "@/config/admin-nav";
@@ -82,16 +82,18 @@ function NavItem({ item, active, onClick }: { item: AdminNavItem; active: boolea
   );
 }
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ siteTitle }: { siteTitle: string }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
-  // Close on route change
-  useEffect(() => {
+  // Close drawer when the route changes — close during render, not in an effect
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
@@ -148,7 +150,7 @@ export default function AdminSidebar() {
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-56 lg:flex-col lg:border-r lg:border-border lg:bg-surface/80 lg:backdrop-blur">
         <div className="px-4 py-4">
           <Link href="/admin" className="font-display text-base font-medium text-text-primary">
-            bubu admin
+            {siteTitle}
           </Link>
         </div>
         {renderNav()}
@@ -160,7 +162,7 @@ export default function AdminSidebar() {
           <div className="absolute inset-0 bg-chocolate/30" onClick={closeMobile} />
           <aside className="absolute inset-y-0 left-0 z-50 w-64 bg-surface shadow-[var(--shadow-lift)]">
             <div className="flex items-center justify-between px-4 py-4">
-              <span className="font-display text-base font-medium text-text-primary">bubu admin</span>
+              <span className="font-display text-base font-medium text-text-primary">{siteTitle}</span>
               <button onClick={closeMobile} className="rounded-lg p-1 text-text-secondary hover:text-text-primary" aria-label="Close menu">
                 {icons.close}
               </button>

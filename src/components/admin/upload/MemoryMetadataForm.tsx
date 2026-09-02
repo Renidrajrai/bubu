@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { CATEGORIES, DISPLAY_MODES } from "@/config/scenes";
 import { inputCls, labelCls } from "../formCls";
 

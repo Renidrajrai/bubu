@@ -53,7 +53,7 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
     setFile(f);
   }
 
-  async function cleanupCloudinary(publicId: string, mediaType: string) {
+  async function cleanupCloudinary(publicId: string) {
     try {
       await fetch("/api/admin/media", {
         method: "DELETE",
@@ -160,7 +160,7 @@ export default function UploadMemory({ onDone }: { onDone: () => void }) {
       });
       if (!memoryRes.ok) {
         // Recovery: clean up the Cloudinary asset since memory creation failed
-        if (cloudinaryResult) await cleanupCloudinary(cloudinaryResult.public_id, mediaType);
+        if (cloudinaryResult) await cleanupCloudinary(cloudinaryResult.public_id);
         throw new Error("file uploaded but memory could not be created. The uploaded file has been cleaned up.");
       }
 

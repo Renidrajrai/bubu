@@ -36,9 +36,6 @@ export function signUploadParams(params: Record<string, string | number>) {
 }
 
 // Single source of truth for what an upload is allowed to do.
-// Used by /api/upload/sign (browser flow) and scripts (server-side test).
-export type SignedUploadParams = ReturnType<typeof createSignedUploadParams>;
-
 export function createSignedUploadParams(mediaType: "image" | "video") {
   requireCloudinaryEnv();
   const timestamp = Math.floor(Date.now() / 1000);

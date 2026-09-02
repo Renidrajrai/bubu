@@ -34,6 +34,16 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local media import folder (private photos/videos)
+/import/
+
+# runtime logs & tooling
+dev-server.log
+.opencode/
+
+# unreferenced local image
+src/lib/bubuanddudu.jpg
+
 # vercel
 .vercel
 

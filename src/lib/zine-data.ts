@@ -20,6 +20,23 @@ export type ZinePayload = {
   text: Record<string, string>;
 };
 
+export const DEFAULT_SITE_TITLE = "PATTU — Visual Archive";
+
+// Safe read of the site title for the admin brand + browser tab. Never
+// throws — falls back to the default if the DB isn't reachable.
+export async function getSiteTitle(): Promise<string> {
+  try {
+    await connectDB();
+    const doc = await Settings.findOne().select("siteTitle").lean();
+    if (doc?.siteTitle && typeof doc.siteTitle === "string" && doc.siteTitle.trim()) {
+      return doc.siteTitle.trim();
+    }
+  } catch (err) {
+    console.error("[zine] could not load site title:", err);
+  }
+  return DEFAULT_SITE_TITLE;
+}
+
 function toText(data: unknown): Record<string, string> {
   const merged = data && typeof data === "object"
     ? { ...STORY_TEXT_DEFAULTS, ...(data as Record<string, unknown>) }

@@ -16,6 +16,11 @@ const SORT_MAP: Record<MemorySortOption, Record<string, 1 | -1>> = {
   "recently-updated": { updatedAt: -1 },
 };
 
+// escape user input injected into $regex to prevent ReDoS / unexpected matching
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export async function GET(request: Request) {
   try {
     await requireAdmin();
@@ -31,7 +36,7 @@ export async function GET(request: Request) {
     const featured = searchParams.get("featured") || "";
     const sort = (searchParams.get("sort") as MemorySortOption) || "newest";
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "25", 10)));
+    const limit = Math.min(500, Math.max(1, parseInt(searchParams.get("limit") || "25", 10)));
 
     const filter: Record<string, unknown> = {};
 
@@ -57,11 +62,12 @@ export async function GET(request: Request) {
     }
 
     if (search) {
+      const q = escapeRegExp(search);
       filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { caption: { $regex: search, $options: "i" } },
-        { location: { $regex: search, $options: "i" } },
-        { category: { $regex: search, $options: "i" } },
+        { title: { $regex: q, $options: "i" } },
+        { caption: { $regex: q, $options: "i" } },
+        { location: { $regex: q, $options: "i" } },
+        { category: { $regex: q, $options: "i" } },
       ];
     }
 

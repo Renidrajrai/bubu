@@ -1,3 +1,5 @@
+"use client";
+
 const variants = {
   leaf: (
     <svg viewBox="0 0 24 32" fill="none" className="h-full w-full">
@@ -93,7 +95,7 @@ export default function BotanicalSticker({
   return (
     <div
       aria-hidden
-      className={`sticker-bob ${className}`}
+      className={className}
       style={{ width: 28, height: 28, ...style }}
     >
       {variants[variant]}
